@@ -31,7 +31,7 @@ def getHistory(id: int) -> list[dict]:
         list[dict]: Dict objects containing time and state of `id` location
     """
     if (__database.history.count_documents({'station_id': id}) == 0):
-        return {"error": f"{id} is not a valid id"}
+        return [{"error": f"{id} is not a valid id"}]
     return [x for x in __database.history.find({'station_id': id})]
 
 def getState(id: int) -> dict:
@@ -75,6 +75,8 @@ def setState(id: int, state: bool) -> dict:
     Returns:
         bool: state of update
     """
+    if (state == None):
+        return {"error": f"Received a state of None"}
     data = {
         'station_id': id,
         'state': state,
