@@ -4,6 +4,7 @@
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS                     # CORS
 from flask_restx import Api, Resource, fields   # Provides API docs
+from flask_talisman import Talisman             # HTTP to HTTPS redirect
 from database import *
 
 def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=True, certPath: str=None, keyPath: str=None) -> bool:
@@ -31,10 +32,10 @@ def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=Tr
     app = Flask(__name__)
     CORS(app)
     if (https):
+        Talisman(app, content_security_policy=None)
         @app.before_request
         def before_request():
-            scheme = request.headers.get('X-Forwarded-Proto')
-            if scheme and scheme == 'http' and request.url.startswith('http://'):
+            if not request.is_secure:
                 url = request.url.replace('http://', 'https://', 1)
                 code = 301
                 return redirect(url, code=code)
@@ -102,7 +103,7 @@ def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=Tr
     # Run server
     if (https):
         if (certPath == None or keyPath == None):
-            app.run(debug=debug, host=ip, port=port, ssl_context='adhoc')
+            app.run(debug=debug, host=ip, port=port)
         else:
             app.run(debug=debug, host=ip, port=port, ssl_context=(certPath, keyPath))
     else:

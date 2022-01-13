@@ -3,7 +3,7 @@ from pymongo.errors import ConnectionFailure
 from datetime import datetime
 
 # Connect to database
-__database = MongoClient("mongo")
+__database = MongoClient("0.0.0.0")
 
 # Check connection
 try:
@@ -30,9 +30,11 @@ def getHistory(id: int) -> list[dict]:
     Returns:
         list[dict]: Dict objects containing time and state of `id` location
     """
+    if (__database.history.count_documents({'station_id': id}) == 0):
+        return {"error": f"{id} is not a valid id"}
     return [x for x in __database.history.find({'station_id': id})]
 
-def getState(id: int) -> bool:
+def getState(id: int) -> dict:
     """Gets the history of `id` from the database
 
     Args:
@@ -42,7 +44,9 @@ def getState(id: int) -> bool:
         bool: `True` means there is a blockage of the railroad,
         while `False` means the crossing appears to be clear
     """
-    return __database.history.find({'station_id': id}).sort('time', DESCENDING)[0].get('state')
+    if (__database.history.count_documents({'station_id': id}) == 0):
+        return {"error": f"{id} is not a valid id"}
+    return __database.history.find({'station_id': id}).sort('time', DESCENDING).limit(1)[0]
 
 def getStation(id: int) -> dict:
     """Gets the station's physical location from the `id`
@@ -57,9 +61,11 @@ def getStation(id: int) -> dict:
             'longitude': <physical_longitude>
         }
     """
+    if (__database.station.count_documents({'station_id': id}) == 0):
+        return {"error": f"{id} is not a valid id"}
     return __database.station.find_one({'station_id': id})
 
-def setState(id: int, state: bool) -> bool:
+def setState(id: int, state: bool) -> dict:
     """Sets the state of the station
 
     Args:
@@ -69,14 +75,17 @@ def setState(id: int, state: bool) -> bool:
     Returns:
         bool: state of update
     """
-    __database.history.insert({
+    data = {
         'station_id': id,
         'state': state,
         'time': datetime.utcnow()
-    })
-    return getState(id) == state
+    }
+    __database.history.insert_one(data)
+    if (getState(id).get('error') != None):
+        return {"error": f"failed to insert new state of {state} for station {id}"}
+    return {"success":getState(id) == data}
         
-def insert_new_station(lat: str, lon: str) -> int|None:
+def insert_new_station(lat: str, lon: str) -> dict:
     """Inserts a new station
 
     Args:
@@ -87,22 +96,17 @@ def insert_new_station(lat: str, lon: str) -> int|None:
         int: The id of the station if successfull, otherwise returns `None`
     """
     if (__database.station.count_documents({}) == 0):
-        largest_station_id = None
+        largest_station_id = -1 # Will be incremented in a few lines
     else:
         largest_station_id = __database.station.find().sort('station_id', ASCENDING)[0].get('station_id')
-    if (largest_station_id == None):
-        new_station_id = 0
-    else:
-        new_station_id = largest_station_id + 1
-    __database.station.insert_one({
+    new_station_id = largest_station_id + 1
+    data = {
         'station_id': new_station_id,
         'latitude': lat,
         'longitude': lon
-    })
-    database_station = getStation(new_station_id)
-    if (database_station.get('latitude') != lat):
-        return None
-    if (database_station.get('longitude') != lon):
-        return None
-    return new_station_id
+    }
+    __database.station.insert_one(data)
+    if (data != getStation(new_station_id)):
+        return {"error": "Could not create new station"}
+    return {'station_id':new_station_id}
     
