@@ -1,25 +1,32 @@
 from pymongo import MongoClient, DESCENDING, ASCENDING
 from pymongo.errors import ConnectionFailure
 from datetime import datetime
+from sys import stderr
+connection = None
+db = None
 
-# Connect to database
-__database = MongoClient("0.0.0.0")
+def connect(url: str="mongo", port: int=27017, database: str="train"):
+    # Connect to database
+    global connection, db
+    connection = MongoClient(url, port=port)
 
-# Check connection
-try:
-    __database.admin.command('ping')
-except ConnectionFailure:
-    print("Server not available")
-    exit(1)
-
-# If connected, redefine __database as our database, not the connection
-__database = __database.train
-
-# Make sure collections exist
-if ("history" not in __database.list_collection_names()):
-    __database.create_collection("history")
-if ("station" not in __database.list_collection_names()):
-    __database.create_collection("station")
+    # Check connection
+    try:
+        connection.admin.command('ping')
+    except ConnectionFailure:
+        print("Server not available")
+        exit(1)
+    if (database == "train"):
+        db = connection.train
+        if ("history" not in db.list_collection_names()):
+            db.create_collection("history")
+        if ("station" not in db.list_collection_names()):
+            db.create_collection("station")
+    elif (database == "train_test"):
+        db = connection.train_test
+    else:
+        print(f"Database: {database} is not a valid choice, please choose \"train\" or \"train_test\"", file=stderr)
+        exit(2)
 
 def getHistory(id: int) -> list[dict]:
     """Gets the history of `id` from the database
@@ -30,9 +37,9 @@ def getHistory(id: int) -> list[dict]:
     Returns:
         list[dict]: Dict objects containing time and state of `id` location
     """
-    if (__database.history.count_documents({'station_id': id}) == 0):
+    if (db.history.count_documents({'station_id': id}) == 0):
         return [{"error": f"{id} is not a valid id"}]
-    return [x for x in __database.history.find({'station_id': id})]
+    return [x for x in db.history.find({'station_id': id})]
 
 def getState(id: int) -> dict:
     """Gets the history of `id` from the database
@@ -44,9 +51,9 @@ def getState(id: int) -> dict:
         bool: `True` means there is a blockage of the railroad,
         while `False` means the crossing appears to be clear
     """
-    if (__database.history.count_documents({'station_id': id}) == 0):
+    if (db.history.count_documents({'station_id': id}) == 0):
         return {"error": f"{id} is not a valid id"}
-    return __database.history.find({'station_id': id}).sort('time', DESCENDING).limit(1)[0]
+    return db.history.find({'station_id': id}).sort('time', DESCENDING).limit(1)[0]
 
 def getStation(id: int) -> dict:
     """Gets the station's physical location from the `id`
@@ -61,9 +68,9 @@ def getStation(id: int) -> dict:
             'longitude': <physical_longitude>
         }
     """
-    if (__database.station.count_documents({'station_id': id}) == 0):
+    if (db.station.count_documents({'station_id': id}) == 0):
         return {"error": f"{id} is not a valid id"}
-    return __database.station.find_one({'station_id': id})
+    return db.station.find_one({'station_id': id})
 
 def setState(id: int, state: bool) -> dict:
     """Sets the state of the station
@@ -82,7 +89,7 @@ def setState(id: int, state: bool) -> dict:
         'state': state,
         'time': datetime.utcnow()
     }
-    __database.history.insert_one(data)
+    db.history.insert_one(data)
     if (getState(id).get('error') != None):
         return {"error": f"failed to insert new state of {state} for station {id}"}
     return {"success":getState(id) == data}
@@ -97,18 +104,21 @@ def insert_new_station(lat: str, lon: str) -> dict:
     Returns:
         int: The id of the station if successfull, otherwise returns `None`
     """
-    if (__database.station.count_documents({}) == 0):
+    if (db.station.count_documents({}) == 0):
         largest_station_id = -1 # Will be incremented in a few lines
     else:
-        largest_station_id = __database.station.find().sort('station_id', ASCENDING)[0].get('station_id')
+        largest_station_id = db.station.find().sort('station_id', DESCENDING)[0].get('station_id')
     new_station_id = largest_station_id + 1
     data = {
         'station_id': new_station_id,
         'latitude': lat,
         'longitude': lon
     }
-    __database.station.insert_one(data)
-    if (data != getStation(new_station_id)):
+    #db.station.insert_one(data)
+    # insert_id = db.station.insert_one(data).inserted_id
+    # print("TEST!")
+    # print(insert_id)
+    if (not db.station.insert_one(data).inserted_id):
         return {"error": "Could not create new station"}
     return {'station_id':new_station_id}
     

@@ -5,13 +5,9 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./main.py:/usr/local/share/train_backend
-      - ./server.py:/usr/local/share/server.py
-      - ./database.py:/usr/local/share/database.py
       - logvolume01:/var/log
     links:
       - mongo
-    command: ["python", "/usr/local/share/train_backend"]
   mongo:
     image: mongo
     ports:
