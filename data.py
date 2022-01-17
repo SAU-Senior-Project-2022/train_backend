@@ -19,16 +19,16 @@ class station(object):
         self.latitude = latitude
         self.longitude = longitude
 
-class settings(object):
-    name : str
-    username : str
-    password : str 
-    url : str
-    port : int
+# class settings(object):
+#     name : str
+#     username : str
+#     password : str 
+#     url : str
+#     port : int
 
-    def __init__(self, username : str, password : str, url : str="0.0.0.0", port : int=3306, name : str="train"):
-        self.name = name
-        self.username = username
-        self.password = password
-        self.url = url
-        self.port = port
+#     def __init__(self, username : str, password : str, url : str="0.0.0.0", port : int=3306, name : str="train"):
+#         self.name = name
+#         self.username = username
+#         self.password = password
+#         self.url = url
+#         self.port = port

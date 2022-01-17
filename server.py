@@ -4,7 +4,7 @@
 from flask import Flask
 from flask_cors import CORS # CORS
 from flask_restful import Api # Provides API docs
-import database
+import database2
 import endpoints
 import random
 
@@ -42,8 +42,9 @@ def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=Tr
     if (port == None):
         port = 5000
 
+    #settings = 
     # Connect to database
-    database.connect("0.0.0.0")
+    database2.connect("0.0.0.0")
     
     # Assign classes to endpoints    
     api.add_resource(endpoints.State, '/state/<station_id>')
@@ -55,7 +56,7 @@ def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=Tr
     
     # Seed database
     
-    if (seed):
+    if (seed and debug):
         seed_database()
     # Run server
     if (https):
