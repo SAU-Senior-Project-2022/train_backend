@@ -6,11 +6,22 @@ from flask_cors import CORS # CORS
 from flask_restful import Api # Provides API docs
 import database
 import endpoints
+import random
 
-__app = Flask(__name__)
-api = Api(__app)
+app = Flask(__name__)
+api = Api(app)
 
-def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=True, certPath: str=None, keyPath: str=None) -> bool:
+def seed_database():
+    station_ids = []
+    for i in range(22):
+        station_id = database.insert_new_station(123123,12341234)
+        print(station_id)
+        station_ids.append(station_id)
+    for i in station_ids:
+        for j in range(22):
+            database.setState(i, bool(random.getrandbits(1)))
+
+def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=True, certPath: str=None, keyPath: str=None, seed: bool=None) -> bool:
     """Starts the http server
 
     Args:
@@ -42,15 +53,19 @@ def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=Tr
 
     #app.secret_key = os.urandom(24)
     
+    # Seed database
+    
+    if (seed):
+        seed_database()
     # Run server
     if (https):
-        CORS(__app)
+        CORS(app)
         if (certPath == None or keyPath == None):
-            __app.run(debug=debug, host=ip, port=port)
+            app.run(debug=debug, host=ip, port=port)
         else:
-            __app.run(debug=debug, host=ip, port=port, ssl_context=(certPath, keyPath))
+            app.run(debug=debug, host=ip, port=port, ssl_context=(certPath, keyPath))
     else:
-        __app.run(debug=debug, host=ip, port=port)
+        app.run(debug=debug, host=ip, port=port)
     return True
 
 

@@ -14,5 +14,6 @@ if (__name__ == "__main__"):
     parser.add_argument("--key-file", dest="key", 
                         help="Provide the path to the key file for the server. \
                         If not provided, it is provided by the server.", required=False)
+    parser.add_argument("--seed", dest="seed", required=False)
     args = parser.parse_args()
-    server.start_server(ip=args.ip, port=args.port, debug=args.debug, https=not args.http, certPath=args.cert, keyPath=args.key)
+    server.start_server(ip=args.ip, port=args.port, debug=args.debug, https=not args.http, certPath=args.cert, keyPath=args.key, seed=args.seed)
