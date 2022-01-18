@@ -1,4 +1,5 @@
 import datetime
+import json
 class history(object):
     id : int
     state : bool
@@ -9,6 +10,10 @@ class history(object):
         self.state = state
         self.date = date
         self.station_id = station_id
+    
+    class HistoryEncoder(json.JSONEncoder):
+        def default(self, o):
+            return o.__dict__
 
 class station(object):
     id : int
@@ -18,6 +23,9 @@ class station(object):
         self.id = id
         self.latitude = latitude
         self.longitude = longitude
+    class StationEncoder(json.JSONEncoder):
+        def default(self, o):
+            return o.__dict__
 
 # class settings(object):
 #     name : str
