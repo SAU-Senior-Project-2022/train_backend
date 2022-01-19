@@ -2,6 +2,8 @@ import mariadb
 from datetime import datetime
 from sys import stderr, exit
 import data
+import random
+
 connection = None
 db = None 
 def connect(username: str, password: str, url: str="localhost", port: int=3306, database: str="train", fresh_migrate: bool=False):
@@ -75,25 +77,33 @@ def create_database():
     db.execute("ALTER TABLE `history` ADD CONSTRAINT `fk_history_station` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`);")
     connection.commit()
 
-def getHistory(id: int) -> list[data.history]:
-    db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC", (id,))
-    rows = db.fetchall()
-    history_instances = []
-    for row in rows:
-        history_instances.append(data.history(row[0], row[1], row[2], row[3]))
-    return history_instances
-    
-def getState(id: int) -> int:
-    db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
-    column = db.fetchone()
-    return data.history(column[0], column[1], column[2], column[3])
+def getStation(id: int) -> dict:
+    """Gets the station's physical location from the `id`
 
-def getStation(id: int) -> data.station:
-    db.execute("SELECT id, latitude, longitude FROM station WHERE id=?;", (id,))
-    row = db.fetchone()
-    return data.station(row[0], row[1], row[2])
+    Args:
+        id (int): Id of the station
 
-def setState(id: int, state: int) -> dict:
+    Returns:
+        dict: {
+            'station_id': `id`, 
+            'latitude': <physical_latitude>, 
+            'longitude': <physical_longitude>
+        }
+    """
+    if (db.station.count_documents({'station_id': id}) == 0):
+        return {"error": f"{id} is not a valid id"}
+    return db.station.find_one({'station_id': id})
+
+def setState(id: int, state: bool) -> dict:
+    """Sets the state of the station
+
+    Args:
+        id (int): Id of the station
+        state (bool): `True` means there is a blockage, while `False` means it appears to be clear`
+
+    Returns:
+        bool: state of update
+    """
     if (state == None):
         return {"error": f"Received a state of None"}
     db.execute("INSERT INTO history (state, station_id) VALUES (?, ?);", (state, id))

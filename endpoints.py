@@ -1,22 +1,22 @@
-import database2
+import database
 import data
 import json
 from flask import jsonify, request, Response, Flask
 from flask_restful import Resource, reqparse, Api
 from sys import stderr
 
-__app = Flask(__name__)
-api = Api(__app)
+app = Flask(__name__)
+api = Api(app)
 
 # Create classes to handle requests
-class State(Resource):
+class state(Resource):
     """deals with `GET` and `POST` for the state of a station
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
     """        
     def get(self, station_id):
-        resp = database2.getState(station_id)
+        resp = database.getState(station_id)
         # if (resp.get("error") != None):
         #     print(f"Error: {resp.get('error')}", file=stderr)
         return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
@@ -32,36 +32,35 @@ class State(Resource):
         if (data.get('state') == None):
             return Response(json.dumps({'error': "Missing json key: 'state'", 'correct': {"state": "true|false"}}), status=422, mimetype="application/json" )
             pass
-        #print(bin(data.get('state')))
-        resp = database2.setState(station_id, data.get('state'))
-        # if (resp.get("error") != None):
-        #     print(f"Error: {resp.get('error')}", file=stderr)
-        #     return Response(json.dumps({'error': resp.get('error'), 'correct': {"state": "true|false"}}), status=422, mimetype="application/json" )
+        resp = database.setState(station_id, args.get('station_id'))
+        if (resp.get("error") != None):
+            print(f"Error: {resp.get('error')}", file=stderr)
+            return Response(json.dumps({'error': resp.get('error'), 'correct': {"state": "true|false"}}), status=422, mimetype="application/json" )
         return jsonify(resp)
     
-class History(Resource):
+class sistory(Resource):
     """deals with `GET` for the history of a station
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
     """
     def get(self, station_id):
-        resp = database2.getHistory(station_id)
-        # if (resp[0].get('error') != None):
-        #     print(f"Error: {resp[0].get('error')}", file=stderr)
-        return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
+        resp = database.getHistory(station_id)
+        if (resp[0].get('error') != None):
+            print(f"Error: {resp[0].get('error')}", file=stderr)
+        return jsonify(resp)
     
-class LocationGet(Resource):
-    """deals with `GET` for the location of a station
+class location(Resource):
+    """deals with `GET` and `POST` for the location of a station
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
     """
     def get(self, station_id):
-        resp = database2.getStation(station_id)
-        # if (resp.get('error') != None):
-        #     print(f"Error: {resp.get('error')}", file=stderr)
-        return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
+        resp = database.getStation(station_id)
+        if (resp.get('error') != None):
+            print(f"Error: {resp.get('error')}", file=stderr)
+        return jsonify(resp)
 class LocationPost(Resource):
     """deals with `POST` for the location of a station
 

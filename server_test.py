@@ -29,7 +29,7 @@ class TestServerMethods(unittest.TestCase):
         print(database.db.history.find({'station_id': station_ids[0]}).sort('time', pymongo.DESCENDING).limit(1)[0].get('station_id'))
         with server.app.app_context():
             print('inside')
-            print(State.get(None,station_ids[0]).get('station_id'))
+            print(state.get(None,station_ids[0]).get('station_id'))
             #this.assertEquals(database.db.history.find({'station_id': station_ids[0]}).sort('time', pymongo.DESCENDING).limit(1)[0].get('station_id'), State.get(None,station_ids[0]).get('station_id'))
 
 if __name__ == "__main__":
