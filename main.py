@@ -1,27 +1,45 @@
 #!/bin/env python
+from email.policy import default
 import server
 import argparse
 
 if (__name__ == "__main__"):
-    parser = argparse.ArgumentParser(description="Runs a server that provides the backend for trains.")
-    parser.add_argument("--ip", dest="ip", help="Specify the ip for the server. Default is 0.0.0.0.", required=False)
-    parser.add_argument("--port", dest="port", help="Specify the port for the server. Default is 5000.", required=False, type=int)
-    parser.add_argument("--debug", dest="debug", help="The server will be in debug mode", required=False, action="store_true")
-    parser.add_argument("--http", dest="http", help="The server will run over http", required=False, action="store_true")
-    parser.add_argument("--cert-file", dest="cert", 
-                        help="Provide the path to the certificate file for \
-                        the server. If not provided, it is provided by the server.", required=False)
-    parser.add_argument("--key-file", dest="key", 
-                        help="Provide the path to the key file for the server. \
-                        If not provided, it is provided by the server.", required=False)
-    parser.add_argument("--seed", dest="seed", required=False, default=False)
-    parser.add_argument("--username", dest="user", default="root",
-                        help="Provide an username for the database", required=False)
-    parser.add_argument("--password", dest="password", default="",
-                        help="Provide the path to the key file for the server. \
-                        If not provided, it is provided by the server.", required=False)
-    parser.add_argument("--fresh", dest="fresh", required=False)
+    parser = argparse.ArgumentParser(
+        description="Runs a server that provides the backend for trains.")
+    
+    parser.add_argument("--ip", dest="ip", default="0.0.0.0", \
+        help="Specify the ip for the server. Default is 0.0.0.0.", required=False)
+    parser.add_argument("--port", dest="port", default=5000, \
+        help="Specify the port for the server. Default is 5000.", required=False, type=int)
+    
+    parser.add_argument("--username", dest="user", default="root", \
+        help="Provide an username for the database", required=False)
+    parser.add_argument("--password", dest="password", default="", \
+        help="Provide the path to the key file for the server. \
+        If not provided, it is provided by the server.", required=False)
+    
+    parser.add_argument("--http", dest="http", default=False, \
+        help="The server will run over http", required=False, action="store_true")
+    parser.add_argument("--cert-file", dest="cert", default=None, \
+        help="Provide the path to the certificate file for \
+        the server. If not provided, it is provided by the server.", required=False)
+    parser.add_argument("--key-file", dest="key", default=None, \
+        help="Provide the path to the key file for the server. \
+        If not provided, it is provided by the server.", required=False)
+    
+    parser.add_argument("--debug", dest="debug", default=False, \
+        help="The server will be in debug mode", required=False, \
+        action="store_true")
+    parser.add_argument("--fresh", dest="fresh", default=False, \
+        help="Will empty the database. Requires --debug flag.", required=False, \
+        action="store_true")
+    parser.add_argument("--seed", dest="seed", default=False, \
+        help="Will reseed the database with random values. \
+        Requires --debug flag.", required=False, action="store_true")
+    
     args = parser.parse_args()
-    server.start_server(ip=args.ip, port=args.port, debug=args.debug, https=not args.http,\
-            certPath=args.cert, keyPath=args.key, seed=args.seed, username=args.user, \
-            password=args.password, fresh_migration=args.fresh)
+    server.start_server(
+        ip=args.ip, port=args.port, 
+        username=args.user, password=args.password,
+        https=not args.http, certPath=args.cert, keyPath=args.key,
+        debug=args.debug, seed=args.seed, fresh_migration=args.fresh)
