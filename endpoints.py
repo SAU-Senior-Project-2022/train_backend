@@ -17,9 +17,9 @@ class State(Resource):
     """        
     def get(self, station_id):
         resp = database2.getState(station_id)
-        if (resp.get("error") != None):
-            print(f"Error: {resp.get('error')}", file=stderr)
-        return jsonify(resp)
+        # if (resp.get("error") != None):
+        #     print(f"Error: {resp.get('error')}", file=stderr)
+        return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
     
     def post(self, station_id):
         parser = reqparse.RequestParser()
@@ -32,11 +32,11 @@ class State(Resource):
         if (data.get('state') == None):
             return Response(json.dumps({'error': "Missing json key: 'state'", 'correct': {"state": "true|false"}}), status=422, mimetype="application/json" )
             pass
-        print(bin(data.get('state')))
+        #print(bin(data.get('state')))
         resp = database2.setState(station_id, data.get('state'))
-        if (resp.get("error") != None):
-            print(f"Error: {resp.get('error')}", file=stderr)
-            return Response(json.dumps({'error': resp.get('error'), 'correct': {"state": "true|false"}}), status=422, mimetype="application/json" )
+        # if (resp.get("error") != None):
+        #     print(f"Error: {resp.get('error')}", file=stderr)
+        #     return Response(json.dumps({'error': resp.get('error'), 'correct': {"state": "true|false"}}), status=422, mimetype="application/json" )
         return jsonify(resp)
     
 class History(Resource):

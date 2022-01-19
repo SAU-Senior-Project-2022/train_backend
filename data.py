@@ -13,6 +13,9 @@ class history(object):
     
     class HistoryEncoder(json.JSONEncoder):
         def default(self, o):
+            print(o)
+            #o.date = [o.date.year, o.date.month, o.date.day, o.date.hour, o.date.minute, o.date.second]
+            o.date = {"year":o.date.year, "month":o.date.month, "day":o.date.day, "hour":o.date.hour, "minute":o.date.minute, "second":o.date.second}
             return o.__dict__
 
 class station(object):
