@@ -49,7 +49,7 @@ def create_database():
     connection.commit()
 
 def getHistory(id: int) -> list[data.history]:
-    db.execute("SELECT id, state, date, station_id FROM history WHERE id=?", (id,))
+    db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC", (id,))
     rows = db.fetchall()
     history_instances = []
     for row in rows:
@@ -57,7 +57,7 @@ def getHistory(id: int) -> list[data.history]:
     return history_instances
     
 def getState(id: int) -> int:
-    db.execute("SELECT id, state, date, station_id FROM history WHERE id=? ORDER BY date DESC LIMIT 1", (id,))
+    db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
     column = db.fetchone()
     return data.history(column[0], column[1], column[2], column[3])
 
@@ -71,9 +71,7 @@ def setState(id: int, state: int) -> dict:
         return {"error": f"Received a state of None"}
     db.execute("INSERT INTO history (state, station_id) VALUES (?, ?);", (state, id))
     connection.commit()
-    print(getState(id).station_id)
-    print(id)
-    return {"success": getState(id).station_id == id}
+    return {"success": int(getState(id).station_id) == int(id)}
 
 def insert_new_station(lat: float, lon: float):
     db.execute("INSERT INTO station (latitude, longitude) VALUES (?, ?);", (float(lat), float(lon)))

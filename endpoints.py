@@ -47,9 +47,9 @@ class History(Resource):
     """
     def get(self, station_id):
         resp = database2.getHistory(station_id)
-        if (resp[0].get('error') != None):
-            print(f"Error: {resp[0].get('error')}", file=stderr)
-        return jsonify(resp)
+        # if (resp[0].get('error') != None):
+        #     print(f"Error: {resp[0].get('error')}", file=stderr)
+        return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
     
 class LocationGet(Resource):
     """deals with `GET` for the location of a station
