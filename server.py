@@ -21,7 +21,7 @@ def seed_database():
         for j in range(22):
             database2.setState(i, bool(random.getrandbits(1)))
 
-def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=True, certPath: str=None, keyPath: str=None, seed: bool=None, username: str="root", password: str="") -> bool:
+def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=True, certPath: str=None, keyPath: str=None, seed: bool=None, username: str="root", password: str="", fresh_migration: bool=None) -> bool:
     """Starts the http server
 
     Args:
@@ -44,7 +44,7 @@ def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=Tr
 
     #settings = 
     # Connect to database
-    database2.connect(url=ip, username=username, password=password )
+    database2.connect(url=ip, username=username, password=password, fresh_migrate=fresh_migration )
     
     # Assign classes to endpoints    
     api.add_resource(endpoints.State, '/state/<station_id>')

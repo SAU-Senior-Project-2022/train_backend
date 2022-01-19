@@ -4,7 +4,7 @@ from sys import stderr, exit
 import data
 connection = None
 db = None 
-def connect(username: str, password: str, url: str="localhost", port: int=3306, database: str="train"):
+def connect(username: str, password: str, url: str="localhost", port: int=3306, database: str="train", fresh_migrate: bool=False):
     global db
     global connection
     try:
@@ -19,7 +19,17 @@ def connect(username: str, password: str, url: str="localhost", port: int=3306, 
         print(f"Error connecting to MariaDB Platform: {e}", file=stderr)
         exit(2)
     db=connection.cursor()
+    if(fresh_migrate):
+        __migrate_fresh(database)
     __check_database_create(database)
+
+def __migrate_fresh(database_name):
+    if(check_tables('history', database_name)):
+        __drop_table('history')
+    if(check_tables('station', database_name)):
+        __drop_table('station')
+    return True
+
 
 def check_tables(tableName, database_name):
     
@@ -28,6 +38,7 @@ def check_tables(tableName, database_name):
         return True
     else:
         return False
+
 def __check_database_create(database_name):
     if ((check_tables('history', database_name) != check_tables('station', database_name))):
         if(check_tables('history')):
@@ -42,7 +53,10 @@ def __check_database_create(database_name):
         exit(2)
 
 def __drop_table(table_name):
-    db.execute("DROP TABLE ?", (table_name))
+    if table_name == 'history':
+        db.execute("DROP TABLE history;")
+    elif table_name == 'station':
+        db.execute("DROP TABLE station;")
     connection.commit()
     return True
 
@@ -53,7 +67,7 @@ def create_database():
     # db.execute("ALTER TABLE `history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT; ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT; ALTER TABLE `history` ADD CONSTRAINT `fk_history_station` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`);")
     # connection.commit()
     db.execute("CREATE TABLE `history` (`id` int(11) NOT NULL,`state` tinyint(1) NOT NULL,`date` datetime NOT NULL DEFAULT current_timestamp(),`station_id` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
-    db.execute("CREATE TABLE `station` (`id` int(11) NOT NULL,`latitude` float(20,10) NOT NULL`longitude` float(20,10) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+    db.execute("CREATE TABLE `station` (`id` int(11) NOT NULL,`latitude` float(20,10) NOT NULL,`longitude` float(20,10) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
     db.execute("ALTER TABLE `history` ADD PRIMARY KEY (`id`),ADD KEY `fk_history_station` (`station_id`);")
     db.execute("ALTER TABLE `station` ADD PRIMARY KEY (`id`);")
     db.execute("ALTER TABLE `history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
