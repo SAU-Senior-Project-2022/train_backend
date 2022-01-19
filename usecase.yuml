@@ -1,0 +1,17 @@
+// {type:usecase}
+// {generate:true}
+// {direction:leftToRight}
+
+[Station]-(Report State)
+//[Station]-(Authenticate) //Future
+[Frontend]-(Get Current State)
+[Frontend]-(Get Station Info)
+[Frontend]-(List Stations)
+//[Frontend]-(Authenticate) //Future
+[Admin]-(Get Station History)
+[Admin]-(Register Station)
+// [Admin]-(Authenticate)
+// [Admin]-(Register Frontend)
+
+
+//Authentication for both Frontend and Sensor
