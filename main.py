@@ -22,4 +22,6 @@ if (__name__ == "__main__"):
                         If not provided, it is provided by the server.", required=False)
     parser.add_argument("--fresh", dest="fresh", required=False)
     args = parser.parse_args()
-    server.start_server(ip=args.ip, port=args.port, debug=args.debug, https=not args.http, certPath=args.cert, keyPath=args.key, seed=args.seed, username=args.user, password=args.password, fresh_migration=args.fresh)
+    server.start_server(ip=args.ip, port=args.port, debug=args.debug, https=not args.http,\
+            certPath=args.cert, keyPath=args.key, seed=args.seed, username=args.user, \
+            password=args.password, fresh_migration=args.fresh)
