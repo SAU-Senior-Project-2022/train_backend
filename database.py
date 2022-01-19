@@ -51,6 +51,7 @@ def getState(id: int) -> dict:
         bool: `True` means there is a blockage of the railroad,
         while `False` means the crossing appears to be clear
     """
+    print(str(db.history.find({'station_id': id}).sort('time', DESCENDING).limit(1)[0]))
     if (db.history.count_documents({'station_id': id}) == 0):
         return {"error": f"{id} is not a valid id"}
     return db.history.find({'station_id': id}).sort('time', DESCENDING).limit(1)[0]

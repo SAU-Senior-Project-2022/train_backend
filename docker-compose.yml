@@ -4,13 +4,12 @@ services:
     build: .
     ports:
       - "5000:5000"
-    volumes:
-      - logvolume01:/var/log
     links:
-      - mongo
-  mongo:
-    image: mongo
+      - mariadb
+  mariadb:
+    image: mariadb:10.3.32-focal
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: "train"
     ports:
-      - "27017:27017"
-volumes:
-  logvolume01: {}
+      - "3307:3306"

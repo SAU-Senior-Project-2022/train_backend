@@ -1,4 +1,5 @@
 // MongoDB Playground
 use('train');
 
-db.getCollectionNames()
+//db.getCollectionNames()
+db.station.find({'station_id':1}).get('latitude')
