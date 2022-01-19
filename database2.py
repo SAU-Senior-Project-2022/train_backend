@@ -34,7 +34,12 @@ def __check_database_create(database_name):
             __drop_table('history')
         else:
             __drop_table('station')
+        
+    if (not check_tables('history', database_name) and not check_tables('station', database_name)):
         create_database()
+    elif((check_tables('history', database_name) != check_tables('station', database_name))):
+        print("Could not drop tables properly")
+        exit(2)
 
 def __drop_table(table_name):
     db.execute("DROP TABLE ?", (table_name))
@@ -42,10 +47,18 @@ def __drop_table(table_name):
     return True
 
 def create_database():
-    db.execute("CREATE TABLE `history` (`id` int(11) NOT NULL,`state` bit(1) NOT NULL, `date` datetime NOT NULL DEFAULT current_timestamp(), `station_id` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
-    db.execute("CREATE TABLE `station` (`id` int(11) NOT NULL, `latitude` decimal(10,10) NOT NULL,`longitude` decimal(10,10) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
-    db.execute("ALTER TABLE `history` ADD PRIMARY KEY (`id`); ALTER TABLE `station` ADD PRIMARY KEY (`id`); ALTER TABLE `history` ADD KEY `fk_history_station` (`station_id`);")
-    db.execute("ALTER TABLE `history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT; ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT; ALTER TABLE `history` ADD CONSTRAINT `fk_history_station` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`);")
+    # db.execute("CREATE TABLE `history` (`id` int(11) NOT NULL,`state` bit(1) NOT NULL, `date` datetime NOT NULL DEFAULT current_timestamp(), `station_id` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+    # db.execute("CREATE TABLE `station` (`id` int(11) NOT NULL, `latitude` decimal(10,10) NOT NULL,`longitude` decimal(10,10) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+    # db.execute("ALTER TABLE `history` ADD PRIMARY KEY (`id`); ALTER TABLE `station` ADD PRIMARY KEY (`id`); ALTER TABLE `history` ADD KEY `fk_history_station` (`station_id`);")
+    # db.execute("ALTER TABLE `history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT; ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT; ALTER TABLE `history` ADD CONSTRAINT `fk_history_station` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`);")
+    # connection.commit()
+    db.execute("CREATE TABLE `history` (`id` int(11) NOT NULL,`state` tinyint(1) NOT NULL,`date` datetime NOT NULL DEFAULT current_timestamp(),`station_id` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+    db.execute("CREATE TABLE `station` (`id` int(11) NOT NULL,`latitude` float(20,10) NOT NULL`longitude` float(20,10) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+    db.execute("ALTER TABLE `history` ADD PRIMARY KEY (`id`),ADD KEY `fk_history_station` (`station_id`);")
+    db.execute("ALTER TABLE `station` ADD PRIMARY KEY (`id`);")
+    db.execute("ALTER TABLE `history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
+    db.execute("ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
+    db.execute("ALTER TABLE `history` ADD CONSTRAINT `fk_history_station` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`);")
     connection.commit()
 
 def getHistory(id: int) -> list[data.history]:
