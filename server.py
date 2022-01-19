@@ -4,7 +4,7 @@
 from flask import Flask
 from flask_cors import CORS # CORS
 from flask_restful import Api # Provides API docs
-import database2
+import database
 import endpoints
 import random
 
@@ -14,12 +14,12 @@ api = Api(app)
 def seed_database():
     station_ids = []
     for i in range(22):
-        station_id = database2.insert_new_station(123123,12341234)
+        station_id = database.insert_new_station(123123,12341234)
         print(station_id)
         station_ids.append(station_id)
     for i in station_ids:
         for j in range(22):
-            database2.setState(i, bool(random.getrandbits(1)))
+            database.setState(i, bool(random.getrandbits(1)))
 
 def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=True, certPath: str=None, keyPath: str=None, seed: bool=None, username: str="root", password: str="", fresh_migration: bool=None) -> bool:
     """Starts the http server
@@ -44,7 +44,7 @@ def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=Tr
 
     #settings = 
     # Connect to database
-    database2.connect(url=ip, username=username, password=password, fresh_migrate=fresh_migration )
+    database.connect(url=ip, username=username, password=password, fresh_migrate=fresh_migration )
     
     # Assign classes to endpoints    
     api.add_resource(endpoints.State, '/state/<station_id>')

@@ -1,125 +1,106 @@
-from pymongo import MongoClient, DESCENDING, ASCENDING
-from pymongo.errors import ConnectionFailure
+import mariadb
 from datetime import datetime
-from sys import stderr
+from sys import stderr, exit
+import data
 connection = None
-db = None
-
-def connect(url: str="mongo", port: int=27017, database: str="train"):
-    # Connect to database
-    global connection, db
-    connection = MongoClient(url, port=port)
-
-    # Check connection
+db = None 
+def connect(username: str, password: str, url: str="localhost", port: int=3306, database: str="train", fresh_migrate: bool=False):
+    global db
+    global connection
     try:
-        connection.admin.command('ping')
-    except ConnectionFailure:
-        print("Server not available")
-        exit(1)
-    if (database == "train"):
-        db = connection.train
-        if ("history" not in db.list_collection_names()):
-            db.create_collection("history")
-        if ("station" not in db.list_collection_names()):
-            db.create_collection("station")
-    elif (database == "train_test"):
-        db = connection.train_test
+        connection = mariadb.connect(
+            user=username,
+            password=password,
+            host=url,
+            port=port,
+            database=database
+        )
+    except mariadb.Error as e:
+        print(f"Error connecting to MariaDB Platform: {e}", file=stderr)
+        exit(2)
+    db=connection.cursor()
+    if(fresh_migrate):
+        __migrate_fresh(database)
+    __check_database_create(database)
+
+def __migrate_fresh(database_name):
+    if(check_tables('history', database_name)):
+        __drop_table('history')
+    if(check_tables('station', database_name)):
+        __drop_table('station')
+    return True
+
+
+def check_tables(tableName, database_name):
+    
+    db.execute("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = ?) AND (TABLE_NAME = ?)", (database_name, tableName))
+    if (db.fetchone()[0] > 0):
+        return True
     else:
-        print(f"Database: {database} is not a valid choice, please choose \"train\" or \"train_test\"", file=stderr)
+        return False
+
+def __check_database_create(database_name):
+    if ((check_tables('history', database_name) != check_tables('station', database_name))):
+        if(check_tables('history')):
+            __drop_table('history')
+        else:
+            __drop_table('station')
+        
+    if (not check_tables('history', database_name) and not check_tables('station', database_name)):
+        create_database()
+    elif((check_tables('history', database_name) != check_tables('station', database_name))):
+        print("Could not drop tables properly")
         exit(2)
 
-def getHistory(id: int) -> list[dict]:
-    """Gets the history of `id` from the database
+def __drop_table(table_name):
+    if table_name == 'history':
+        db.execute("DROP TABLE history;")
+    elif table_name == 'station':
+        db.execute("DROP TABLE station;")
+    connection.commit()
+    return True
 
-    Args:
-        id (int): Id of the station
+def create_database():
+    # db.execute("CREATE TABLE `history` (`id` int(11) NOT NULL,`state` bit(1) NOT NULL, `date` datetime NOT NULL DEFAULT current_timestamp(), `station_id` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+    # db.execute("CREATE TABLE `station` (`id` int(11) NOT NULL, `latitude` decimal(10,10) NOT NULL,`longitude` decimal(10,10) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+    # db.execute("ALTER TABLE `history` ADD PRIMARY KEY (`id`); ALTER TABLE `station` ADD PRIMARY KEY (`id`); ALTER TABLE `history` ADD KEY `fk_history_station` (`station_id`);")
+    # db.execute("ALTER TABLE `history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT; ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT; ALTER TABLE `history` ADD CONSTRAINT `fk_history_station` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`);")
+    # connection.commit()
+    db.execute("CREATE TABLE `history` (`id` int(11) NOT NULL,`state` tinyint(1) NOT NULL,`date` datetime NOT NULL DEFAULT current_timestamp(),`station_id` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+    db.execute("CREATE TABLE `station` (`id` int(11) NOT NULL,`latitude` float(20,10) NOT NULL,`longitude` float(20,10) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+    db.execute("ALTER TABLE `history` ADD PRIMARY KEY (`id`),ADD KEY `fk_history_station` (`station_id`);")
+    db.execute("ALTER TABLE `station` ADD PRIMARY KEY (`id`);")
+    db.execute("ALTER TABLE `history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
+    db.execute("ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
+    db.execute("ALTER TABLE `history` ADD CONSTRAINT `fk_history_station` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`);")
+    connection.commit()
 
-    Returns:
-        list[dict]: Dict objects containing time and state of `id` location
-    """
-    if (db.history.count_documents({'station_id': id}) == 0):
-        return [{"error": f"{id} is not a valid id"}]
-    return [x for x in db.history.find({'station_id': id})]
+def getHistory(id: int) -> list[data.history]:
+    db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC", (id,))
+    rows = db.fetchall()
+    history_instances = []
+    for row in rows:
+        history_instances.append(data.history(row[0], row[1], row[2], row[3]))
+    return history_instances
+    
+def getState(id: int) -> int:
+    db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
+    column = db.fetchone()
+    return data.history(column[0], column[1], column[2], column[3])
 
-def getState(id: int) -> dict:
-    """Gets the history of `id` from the database
+def getStation(id: int) -> data.station:
+    db.execute("SELECT id, latitude, longitude FROM station WHERE id=?;", (id,))
+    row = db.fetchone()
+    return data.station(row[0], row[1], row[2])
 
-    Args:
-        id (int): Id of the station
-
-    Returns:
-        bool: `True` means there is a blockage of the railroad,
-        while `False` means the crossing appears to be clear
-    """
-    print(str(db.history.find({'station_id': id}).sort('time', DESCENDING).limit(1)[0]))
-    if (db.history.count_documents({'station_id': id}) == 0):
-        return {"error": f"{id} is not a valid id"}
-    return db.history.find({'station_id': id}).sort('time', DESCENDING).limit(1)[0]
-
-def getStation(id: int) -> dict:
-    """Gets the station's physical location from the `id`
-
-    Args:
-        id (int): Id of the station
-
-    Returns:
-        dict: {
-            'station_id': `id`, 
-            'latitude': <physical_latitude>, 
-            'longitude': <physical_longitude>
-        }
-    """
-    if (db.station.count_documents({'station_id': id}) == 0):
-        return {"error": f"{id} is not a valid id"}
-    return db.station.find_one({'station_id': id})
-
-def setState(id: int, state: bool) -> dict:
-    """Sets the state of the station
-
-    Args:
-        id (int): Id of the station
-        state (bool): `True` means there is a blockage, while `False` means it appears to be clear`
-
-    Returns:
-        bool: state of update
-    """
+def setState(id: int, state: int) -> dict:
     if (state == None):
         return {"error": f"Received a state of None"}
-    data = {
-        'station_id': id,
-        'state': state,
-        'time': datetime.utcnow()
-    }
-    db.history.insert_one(data)
-    if (getState(id).get('error') != None):
-        return {"error": f"failed to insert new state of {state} for station {id}"}
-    return {"success":getState(id) == data}
-        
-def insert_new_station(lat: str, lon: str) -> dict:
-    """Inserts a new station
+    db.execute("INSERT INTO history (state, station_id) VALUES (?, ?);", (state, id))
+    connection.commit()
+    return {"success": int(getState(id).station_id) == int(id)}
 
-    Args:
-        lat (str): Physical latitude
-        lon (str): Physical longitude
-
-    Returns:
-        int: The id of the station if successfull, otherwise returns `None`
-    """
-    if (db.station.count_documents({}) == 0):
-        largest_station_id = -1 # Will be incremented in a few lines
-    else:
-        largest_station_id = db.station.find().sort('station_id', DESCENDING)[0].get('station_id')
-    new_station_id = largest_station_id + 1
-    data = {
-        'station_id': new_station_id,
-        'latitude': lat,
-        'longitude': lon
-    }
-    #db.station.insert_one(data)
-    # insert_id = db.station.insert_one(data).inserted_id
-    # print("TEST!")
-    # print(insert_id)
-    if (not db.station.insert_one(data).inserted_id):
-        return {"error": "Could not create new station"}
-    return {'station_id':new_station_id}
-    
+def insert_new_station(lat: float, lon: float):
+    db.execute("INSERT INTO station (latitude, longitude) VALUES (?, ?);", (float(lat), float(lon)))
+    connection.commit()
+    return {'station_id': db.lastrowid}
