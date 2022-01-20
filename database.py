@@ -180,8 +180,10 @@ def getState(id: int) -> data.history:
         db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
     except:
         return [data.history(error_message="There was an error in the database")]
-    column = db.fetchone()
-    return data.history(column[0], column[1], column[2], column[3])
+    row = db.fetchone()
+    if (row == None):
+        return data.history(error_message="State not found")
+    return data.history(row[0], row[1], row[2], row[3])
 
 def getStation(id: int) -> data.station:
     """Gets station info
@@ -197,6 +199,8 @@ def getStation(id: int) -> data.station:
     except:
         return [data.history(error_message="There was an error in the database")]
     row = db.fetchone()
+    if (row == None):
+        return data.station(error_message="Station not found")
     return data.station(row[0], row[1], row[2])
 
 def setState(id: int, state: int) -> dict:
@@ -219,7 +223,7 @@ def setState(id: int, state: int) -> dict:
     return {"success": int(getState(id).station_id) == int(id)}
 
 def insert_new_station(lat: float, lon: float) -> dict:
-    """Inserts new
+    """Inserts new station into database
 
     Args:
         lat (float): Latitude
@@ -234,3 +238,22 @@ def insert_new_station(lat: float, lon: float) -> dict:
         return [{"error": "There was an error in the database"}]
     connection.commit()
     return {'station_id': db.lastrowid}
+
+def getStationList() -> list[data.station]:
+    """Gets list of all stations
+
+    Returns:
+        list[data.station]: List of stations
+    """
+    try:
+        db.execute("SELECT id, latitude, longitude FROM station;")
+    except:
+        return [{"error": "There was an error in the database"}]
+    rows = db.fetchall()
+    if (rows == None):
+        return [{"error": "No Stations found"}]
+    else:
+        return_array = []
+        for row in rows:
+            return_array.append(data.station(row[0], row[1], row[2]))
+        return return_array

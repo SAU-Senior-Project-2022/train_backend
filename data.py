@@ -7,7 +7,7 @@ class history(object):
     station_id    : int
     error_state   : bool
     error_message : str
-    def __init__(self, id: int, state: bool, date: datetime.datetime, station_id : int, error_message: str = ""):
+    def __init__(self, id: int = -1, state: int = -1, date: datetime.datetime = datetime.datetime.today(), station_id : int = -1, error_message: str = ""):
         self.id = id
         self.state = state
         self.date = date
@@ -29,7 +29,7 @@ class station(object):
     longitude : float
     error_state   : bool
     error_message : str
-    def __init__(self, id: int, latitude: float, longitude: float, error_message: str = ""):
+    def __init__(self, id: int = -1, latitude: float = 0.0, longitude: float = 0.0, error_message: str = ""):
         self.id = id
         self.latitude = latitude
         self.longitude = longitude
