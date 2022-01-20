@@ -5,11 +5,20 @@ from flask_cors import CORS # CORS
 import database
 import endpoints
 
-def start_server(
-    ip: str="0.0.0.0", port: int=5000,
-    username: str="root", password: str="",
-    http: bool=False, certPath: str=None, keyPath: str=None,
-    debug: bool=False, seed: bool=False, fresh_migration: bool=False) -> None:
+app = Flask(__name__)
+api = Api(app)
+
+station_ids = []
+def seed_database():
+    for i in range(22):
+        station_id = database.insert_new_station(123123,12341234)
+        print(station_id)
+        station_ids.append(station_id)
+    for i in station_ids:
+        for j in range(22):
+            database.setState(i.get('station_id'), int(random.getrandbits(1)))
+
+def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=True, certPath: str=None, keyPath: str=None, seed: bool=None, username: str="root", password: str="", fresh_migration: bool=None) -> bool:
     """Starts the http server
 
     Args:

@@ -1,8 +1,8 @@
 import unittest
-import pymongo
-from endpoints import *
+from server import app
 import database
-import server
+#import server
+import requests
 #from random_word import RandomWords
 import random
 #seed database
@@ -14,7 +14,7 @@ def seed_database():
         station_ids.append(station_id)
     for i in station_ids:
         for j in range(22):
-            database.setState(i, bool(random.getrandbits(1)))
+            database.setState(i.get('station_id'), int(random.getrandbits(1)))
 
 
 # Test    
@@ -33,7 +33,7 @@ class TestServerMethods(unittest.TestCase):
             #this.assertEquals(database.db.history.find({'station_id': station_ids[0]}).sort('time', pymongo.DESCENDING).limit(1)[0].get('station_id'), State.get(None,station_ids[0]).get('station_id'))
 
 if __name__ == "__main__":
-    database.connect("0.0.0.0", 27017, "train_test")
+    database.connect(username="test", password="conn123", url="0.0.0.0", database="train_test", fresh_migrate=True)
 
     # Create new database
 
@@ -43,8 +43,7 @@ if __name__ == "__main__":
     seed_database()
     #unittest.main()
     #test_seed()
-    database.connection.drop_database('train_test')
-    #unittest.main()
+    unittest.main()
     
     # Destroy database
 

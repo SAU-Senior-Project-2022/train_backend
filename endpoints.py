@@ -61,7 +61,13 @@ class location(Resource):
         resp = database.getStation(station_id)
         # if (resp.get('error') != None):
         #     print(f"Error: {resp.get('error')}", file=stderr)
-        return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
+        return jsonify(json.loads(json.dumps(resp, cls=data.station.StationEncoder)))
+class LocationPost(Resource):
+    """deals with `POST` for the location of a station
+
+    Args:
+        Resource (flask-restx.Resouce): imported from flask-restx
+    """
     def post(self):
         data = request.json
         print(data.get('latitude'))
