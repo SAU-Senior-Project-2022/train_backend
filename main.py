@@ -17,6 +17,8 @@ if (__name__ == "__main__"):
     parser.add_argument("--password", dest="password", default="", \
         help="Provide the path to the key file for the server. \
         If not provided, it is provided by the server.", required=False)
+    parser.add_argument("--database-name", dest="db_name", default="train", \
+        help="Sets the database name. Defaults to \"train\"", required=False)
     
     parser.add_argument("--http", dest="http", default=False, \
         help="The server will run over http", required=False, action="store_true")
@@ -40,6 +42,6 @@ if (__name__ == "__main__"):
     args = parser.parse_args()
     server.start_server(
         ip=args.ip, port=args.port, 
-        username=args.user, password=args.password,
+        username=args.user, password=args.password, database_name=args.db_name,
         http=args.http, certPath=args.cert, keyPath=args.key,
         debug=args.debug, seed=args.seed, fresh_migration=args.fresh)
