@@ -5,38 +5,34 @@ from flask_cors import CORS # CORS
 import database
 import endpoints
 
-app = Flask(__name__)
-api = Api(app)
-
-station_ids = []
-def seed_database():
-    for i in range(22):
-        station_id = database.insert_new_station(123123,12341234)
-        print(station_id)
-        station_ids.append(station_id)
-    for i in station_ids:
-        for j in range(22):
-            database.setState(i.get('station_id'), int(random.getrandbits(1)))
-
-def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=True, certPath: str=None, keyPath: str=None, seed: bool=None, username: str="root", password: str="", fresh_migration: bool=None) -> bool:
+def start_server(
+    ip: str="0.0.0.0", port: int=5000,
+    username: str="root", password: str="", database_name: str="train", db_url: str="localhost",
+    http: bool=False, certPath: str=None, keyPath: str=None,
+    debug: bool=False, seed: bool=False, fresh_migration: bool=False) -> None:
     """Starts the http server
 
     Args:
         ip (str, optional): IP address server binds to. Defaults to "0.0.0.0".
         port (int, optional): Port server binds to. Defaults to 5000.
+        username (str, optional): Username for database. Defaults to "root".
+        password (str, optional): Password for database. Defaults to "".
+        database_name (str, optional): Name of database to use. Defaults to "train".
+        db_url (str, optional): URL of the database to use. Defaults to "localhost".
+        http (bool, optional): [If `True`, server will run over HTTP. Defaults to False.
+        certPath (str, optional): Path to certificate. if not provide, self signed certificate \
+            will be used. Defaults to None.
+        keyPath (str, optional): Path to key. If not provided, key will be provided \
+            through flask-talisman. Defaults to None.Path to key. If not provided, \
+            key will be provided through flask-talisman. Defaults to None.
         debug (bool, optional): Debug mode of Flask server. Defaults to False.
-        https (bool, optional): If `True`, server will run over HTTPS. Defaults to True.
-        certPath (str, optional): Path to certificate. if not provide, self signed certificate will be used. Defaults to None.
-        keyPath (str, optional): Path to key. If not provided, key will be provided through flask-talisman. Defaults to None.
-
-    Returns:
-        bool: Always returns `True`
+        seed (bool, optional): Whether database should be seeded. Defaults to False.
+        fresh_migration (bool, optional): Whether or not to create fresh database. \
+            Defaults to False.
     """
-
-    #settings = 
     # Connect to database
-    database.connect(url=ip, username=username, password=password, 
-        fresh_migrate=(fresh_migration and debug) )
+    database.connect(url=db_url, username=username, password=password, 
+        database=database_name, fresh_migrate=(fresh_migration and debug))
     
     # Assign classes to endpoints    
     endpoints.api.add_resource(endpoints.state, '/state/<station_id>')

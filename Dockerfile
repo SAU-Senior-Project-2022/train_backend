@@ -8,4 +8,4 @@ COPY endpoints.py /usr/local/share/
 COPY server.py /usr/local/share/
 COPY main.py /usr/local/share/train_backend
 
-CMD ["python", "/usr/local/share/train_backend"]
+CMD ["/usr/local/share/train_backend", "--db_url mariadb --http"]
