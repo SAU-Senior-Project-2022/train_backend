@@ -1,82 +1,70 @@
-import database2
+import database
 import data
 import json
-from flask import jsonify, request, Response, Flask
-from flask_restful import Resource, reqparse, Api
+from flask import jsonify, request, Flask
+from flask_restful import Resource, Api
 from sys import stderr
 
-__app = Flask(__name__)
-api = Api(__app)
+app = Flask(__name__)
+api = Api(app)
 
 # Create classes to handle requests
-class State(Resource):
+class state(Resource):
     """deals with `GET` and `POST` for the state of a station
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
     """        
     def get(self, station_id):
-        resp = database2.getState(station_id)
-        # if (resp.get("error") != None):
-        #     print(f"Error: {resp.get('error')}", file=stderr)
+        resp = database.getState(station_id)
         return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
     
     def post(self, station_id):
-        parser = reqparse.RequestParser()
-        parser.add_argument('state', type=bool, help='State of the station')
-        data = request.json
-        #print(data.get('state') == None)
-        #args = parser.parse_args()
-        # print(type(args))
-        # print(args)
-        if (data.get('state') == None):
-            return Response(json.dumps({'error': "Missing json key: 'state'", 'correct': {"state": "true|false"}}), status=422, mimetype="application/json" )
-            pass
-        #print(bin(data.get('state')))
-        resp = database2.setState(station_id, data.get('state'))
-        # if (resp.get("error") != None):
-        #     print(f"Error: {resp.get('error')}", file=stderr)
-        #     return Response(json.dumps({'error': resp.get('error'), 'correct': {"state": "true|false"}}), status=422, mimetype="application/json" )
+        data = request.json.get('state')
+        if (data == None):
+            return jsonify({'error': "Missing json key: 'state'", 'correct': {"state": "true|false"}})
+        resp = database.setState(station_id, data)
         return jsonify(resp)
     
-class History(Resource):
+class history(Resource):
     """deals with `GET` for the history of a station
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
     """
     def get(self, station_id):
-        resp = database2.getHistory(station_id)
-        # if (resp[0].get('error') != None):
-        #     print(f"Error: {resp[0].get('error')}", file=stderr)
+        resp = database.getHistory(station_id)
         return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
     
-class LocationGet(Resource):
-    """deals with `GET` for the location of a station
+class location(Resource):
+    """deals with `GET` and `POST` for the location of a station
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
     """
     def get(self, station_id):
-        resp = database2.getStation(station_id)
-        # if (resp.get('error') != None):
-        #     print(f"Error: {resp.get('error')}", file=stderr)
-        return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
-class LocationPost(Resource):
-    """deals with `POST` for the location of a station
+        resp = database.getStation(station_id)
+        return jsonify(json.loads(json.dumps(resp, cls=data.station.StationEncoder)))
+        # if (resp is not None):
+        #     return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
+        #     retu
+    def post(self, station_id):
+        if (station_id == 'new'):
+            data = request.json
+            if ((data.get('latitude') == None) or (data.get('longitude') == None)):
+                return jsonify({'error': "Did not receive all expected JSON fields", 'correct': {"latitude": "*location*", "longitude": "*location*"}})
+            resp = database.insert_new_station(data.get('latitude'), data.get('longitude'))
+            return jsonify(resp)
+        else:
+            return 404
+
+class locationList(Resource):
+    """deals with `GET` to get list of locations of stations
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
     """
-    def post(self):
-        data = request.json
-        print(data.get('latitude'))
-        
-        # json_data = request.get_json(force=True) ## TO TRY
-        if ((data.get('latitude') == None) or (data.get('longitude') == None)):
-            print("Error: All JSON fields expected not received", file=stderr)
-            return Response(json.dumps({'error': "Did not receive all expected JSON fields", 'correct': {"latitude": "*location*", "longitude": "*location*"}}), status=422, mimetype="application/json" )
-        resp = database2.insert_new_station(data.get('latitude'), data.get('longitude'))
-        if (resp.get('error') != None):
-            print(f"Error: {resp.get('error')}", file=stderr)
-        return jsonify(resp)
+
+    def get(self):
+        resp = database.getStationList()
+        return jsonify(json.loads(json.dumps(resp, cls=data.station.StationEncoder)))
