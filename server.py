@@ -1,27 +1,15 @@
 """
     Server for Train Backend. This is intended to be imported. See `start_server`
 """
-from flask import Flask
 from flask_cors import CORS # CORS
-from flask_restful import Api # Provides API docs
 import database
 import endpoints
-import random
 
-app = Flask(__name__)
-api = Api(app)
-
-def seed_database():
-    station_ids = []
-    for i in range(22):
-        station_id = database.insert_new_station(123123,12341234)
-        print(station_id)
-        station_ids.append(station_id)
-    for i in station_ids:
-        for j in range(22):
-            database.setState(i, bool(random.getrandbits(1)))
-
-def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=True, certPath: str=None, keyPath: str=None, seed: bool=None, username: str="root", password: str="", fresh_migration: bool=None) -> bool:
+def start_server(
+    ip: str="0.0.0.0", port: int=5000,
+    username: str="root", password: str="",
+    http: bool=False, certPath: str=None, keyPath: str=None,
+    debug: bool=False, seed: bool=False, fresh_migration: bool=False) -> None:
     """Starts the http server
 
     Args:
@@ -35,40 +23,32 @@ def start_server(ip: str=None, port: int=5000, debug: bool=False, https: bool=Tr
     Returns:
         bool: Always returns `True`
     """
-    global api
-    # Setup ip and port, using `None` in function declairation to be more compatible with argparser
-    if (ip == None):
-        ip = "0.0.0.0"
-    if (port == None):
-        port = 5000
 
     #settings = 
     # Connect to database
-    database.connect(url=ip, username=username, password=password, fresh_migrate=fresh_migration )
+    database.connect(url=ip, username=username, password=password, 
+        fresh_migrate=(fresh_migration and debug) )
     
     # Assign classes to endpoints    
-    api.add_resource(endpoints.State, '/state/<station_id>')
-    api.add_resource(endpoints.History, '/history/<station_id>')
-    api.add_resource(endpoints.LocationGet, '/location/<station_id>')
-    api.add_resource(endpoints.LocationPost, '/location/new')
+    endpoints.api.add_resource(endpoints.state, '/state/<station_id>')
+    endpoints.api.add_resource(endpoints.history, '/history/<station_id>')
+    endpoints.api.add_resource(endpoints.locationGet, '/location/<station_id>')
+    endpoints.api.add_resource(endpoints.locationPost, '/location/new')
 
-    #app.secret_key = os.urandom(24)
-    
-    # Seed database
-    
+    # Seed database    
     if (seed and debug):
-        seed_database()
+        database.seed_database()
+
     # Run server
-    if (https):
-        CORS(app)
-        if (certPath == None or keyPath == None):
-            app.run(debug=debug, host=ip, port=port)
-        else:
-            app.run(debug=debug, host=ip, port=port, ssl_context=(certPath, keyPath))
+    if (http):
+        endpoints.app.run(debug=debug, host=ip, port=port)
     else:
-        app.run(debug=debug, host=ip, port=port)
-    return True
+        CORS(endpoints.app)
+        if (certPath == None or keyPath == None):
+            endpoints.app.run(debug=debug, host=ip, port=port)
+        else:
+            endpoints.app.run(debug=debug, host=ip, port=port, ssl_context=(certPath, keyPath))
 
 
 if __name__ == "__main__":
-    start_server()
+    print("Please run from main.py")

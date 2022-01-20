@@ -41,5 +41,5 @@ if (__name__ == "__main__"):
     server.start_server(
         ip=args.ip, port=args.port, 
         username=args.user, password=args.password,
-        https=not args.http, certPath=args.cert, keyPath=args.key,
+        http=args.http, certPath=args.cert, keyPath=args.key,
         debug=args.debug, seed=args.seed, fresh_migration=args.fresh)

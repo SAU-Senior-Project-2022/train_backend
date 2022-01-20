@@ -1,9 +1,11 @@
 import mariadb
-from datetime import datetime
 from sys import stderr, exit
 import data
+import random
+
 connection = None
 db = None 
+
 def connect(username: str, password: str, url: str="localhost", port: int=3306, database: str="train", fresh_migrate: bool=False):
     global db
     global connection
@@ -16,8 +18,8 @@ def connect(username: str, password: str, url: str="localhost", port: int=3306, 
             database=database
         )
     except mariadb.Error as e:
-        print(f"Error connecting to MariaDB Platform: {e}", file=stderr)
-        exit(2)
+        print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
+        exit(12)
     db=connection.cursor()
     if(fresh_migrate):
         __migrate_fresh(database)
@@ -32,8 +34,11 @@ def __migrate_fresh(database_name):
 
 
 def check_tables(tableName, database_name):
-    
-    db.execute("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = ?) AND (TABLE_NAME = ?)", (database_name, tableName))
+    try:
+        db.execute("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = ?) AND (TABLE_NAME = ?)", (database_name, tableName))
+    except:
+        print("(database.py:check_tables) SELECT failed")
+        return None
     if (db.fetchone()[0] > 0):
         return True
     else:
@@ -53,11 +58,14 @@ def __check_database_create(database_name):
         exit(2)
 
 def __drop_table(table_name):
-    if table_name == 'history':
-        db.execute("DROP TABLE history;")
-    elif table_name == 'station':
-        db.execute("DROP TABLE station;")
-    connection.commit()
+    try:
+        if table_name == 'history':
+            db.execute("DROP TABLE history;")
+        elif table_name == 'station':
+            db.execute("DROP TABLE station;")
+        connection.commit()
+    except:
+        print("(database.py:__drop_table)")
     return True
 
 def create_database():
@@ -74,6 +82,16 @@ def create_database():
     db.execute("ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
     db.execute("ALTER TABLE `history` ADD CONSTRAINT `fk_history_station` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`);")
     connection.commit()
+
+def seed_database():
+    station_ids = []
+    for i in range(22):
+        station_id = insert_new_station(123123,12341234)
+        print(station_id)
+        station_ids.append(station_id)
+    for i in station_ids:
+        for j in range(22):
+            setState(i, bool(random.getrandbits(1)))
 
 def getHistory(id: int) -> list[data.history]:
     db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC", (id,))

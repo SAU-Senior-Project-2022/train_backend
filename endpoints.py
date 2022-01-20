@@ -5,11 +5,11 @@ from flask import jsonify, request, Response, Flask
 from flask_restful import Resource, reqparse, Api
 from sys import stderr
 
-__app = Flask(__name__)
-api = Api(__app)
+app = Flask(__name__)
+api = Api(app)
 
 # Create classes to handle requests
-class State(Resource):
+class state(Resource):
     """deals with `GET` and `POST` for the state of a station
 
     Args:
@@ -39,7 +39,7 @@ class State(Resource):
         #     return Response(json.dumps({'error': resp.get('error'), 'correct': {"state": "true|false"}}), status=422, mimetype="application/json" )
         return jsonify(resp)
     
-class History(Resource):
+class sistory(Resource):
     """deals with `GET` for the history of a station
 
     Args:
@@ -51,8 +51,8 @@ class History(Resource):
         #     print(f"Error: {resp[0].get('error')}", file=stderr)
         return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
     
-class LocationGet(Resource):
-    """deals with `GET` for the location of a station
+class location(Resource):
+    """deals with `GET` and `POST` for the location of a station
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
@@ -62,12 +62,6 @@ class LocationGet(Resource):
         # if (resp.get('error') != None):
         #     print(f"Error: {resp.get('error')}", file=stderr)
         return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
-class LocationPost(Resource):
-    """deals with `POST` for the location of a station
-
-    Args:
-        Resource (flask-restx.Resouce): imported from flask-restx
-    """
     def post(self):
         data = request.json
         print(data.get('latitude'))
