@@ -1,11 +1,12 @@
 import unittest
 import requests
-URL = "http://localhost:5000"
+URL = "http://0.0.0.0:5000"
 
 station_ids = []
 def get_locations():
     data = requests.get(URL + "/location").json()
     for entry in data:
+        print(entry)
         station_ids.append(entry["id"])
 class TestServerMethods(unittest.TestCase):
     def test_my_life(this):

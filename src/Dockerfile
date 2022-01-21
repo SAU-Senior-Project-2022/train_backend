@@ -9,4 +9,4 @@ RUN ls -l ./
 RUN which python
 RUN python --version
 
-ENTRYPOINT ["/usr/local/share/main.py", "--debug", "--http", "--db-url", "mariadb"]
+ENTRYPOINT ["/usr/local/share/main.py", "--debug", "--http", "--db-url", "mariadb", "--fresh","--seed"]
