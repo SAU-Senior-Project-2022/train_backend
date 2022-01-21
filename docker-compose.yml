@@ -4,8 +4,11 @@ services:
     build: src/
     ports:
       - "5000:5000"
-    links:
+    restart: on-failure
+    depends_on:
       - mariadb
+    links: 
+        - mariadb
   mariadb:
     image: mariadb:10.3.32-focal
     environment:
