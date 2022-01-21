@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument("--username", dest="user", default="root", \
         help="Provide an username for the database", required=False)
     parser.add_argument("--password", dest="password", default="", \
-        help="Provide the path to the key file for the server. \
+        help="Provide an password for the database. \
         If not provided, it is provided by the server.", required=False)
     parser.add_argument("--db-name", dest="db_name", default="train", \
         help="Sets the database name. Defaults to \"train\"", required=False)

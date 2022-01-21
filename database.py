@@ -145,7 +145,8 @@ def seed_database() -> bool:
         station_ids.append(station_id)
     for i in station_ids:
         for j in range(22):
-            setState(i, bool(random.getrandbits(1)))
+            #print(i)
+            setState(i.get('station_id'), int(random.getrandbits(1)))
     return True
 
 def getHistory(id: int) -> list[data.history]:
