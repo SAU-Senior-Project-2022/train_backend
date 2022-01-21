@@ -27,3 +27,7 @@ Once in production, you should specify with `--port` a different port that the d
 If you wish to just run one of the images provided by the [`docker-compose.yml`](/docker-compose.yml), you can run either `docker-compose up -d --no-deps --build flask` or `docker-compose up -d --no-deps --build mariadb`, and the specified image will be run.
 
 If this directory is opened in `Visual Studio Code`, there are 3 debugger launch options currently. One to launch the webserver with HTTP, one for HTTPS, and one for launching the current python file
+
+## Testing
+
+If you wish to test the server. You must run the server with the flags `--debug`, `--fresh`, `--seed` (You can add other flags if you need to be more specific) and run the `server_test.py` application with the server loaded in order for the testing application to connect to the server.

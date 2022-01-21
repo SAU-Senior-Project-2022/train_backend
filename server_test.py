@@ -1,49 +1,64 @@
 import unittest
-from server import app
+from argparse import ArgumentParser
+import threading
+from server import start_server
 import database
 #import server
 import requests
 #from random_word import RandomWords
 import random
 #seed database
+URL = "http://localhost:5000"
+
 station_ids = []
-def seed_database():
-    for i in range(22):
-        station_id = database.insert_new_station(123123,12341234)
-        print(station_id)
-        station_ids.append(station_id)
-    for i in station_ids:
-        for j in range(22):
-            database.setState(i.get('station_id'), int(random.getrandbits(1)))
-
-
-# Test    
-# Failing tests here
+def get_locations():
+    data = requests.get(URL + "/location").json()
+    for entry in data:
+        station_ids.append(entry["id"])
 class TestServerMethods(unittest.TestCase):
     def test_my_life(this):
         this.assertTrue("I do not have a life")
-    def test_state_get(this):
-        #get last state created in first station
-        #print(database.db.history.find({'station_id': station_ids[0]}).sort('time', pymongo.DESCENDING))
-        print("here")
-        print(database.db.history.find({'station_id': station_ids[0]}).sort('time', pymongo.DESCENDING).limit(1)[0].get('station_id'))
-        with server.app.app_context():
-            print('inside')
-            print(state.get(None,station_ids[0]).get('station_id'))
-            #this.assertEquals(database.db.history.find({'station_id': station_ids[0]}).sort('time', pymongo.DESCENDING).limit(1)[0].get('station_id'), State.get(None,station_ids[0]).get('station_id'))
+    def test_get_locations(this):
+        data = requests.get(URL + "/location").json()
+        for entry in data:
+            this.assertEqual(entry.get("error_message"), "")
+            this.assertEqual(entry.get("error_state"), False)
+        this.assertEqual(len(data), len(station_ids))
+    def test_get_location_by_id(this):
+        for id in station_ids:
+            data = requests.get(URL + "/location/" + str(id)).json()
+            this.assertEqual(data.get("error_message"), "")
+            this.assertEqual(data.get("error_state"), False)
+            this.assertEqual(data.get("id"), id)
+            this.assertEqual(data.get("latitude"), 123123.0)
+            this.assertEqual(data.get("longitude"), 12341234.0)
+    def test_get_state(this):
+        for id in station_ids:
+            data = requests.get(URL + "/state/" + str(id)).json()
+            # for entry in data:
+            this.assertEqual(data.get("error_message"), "")
+            this.assertEqual(data.get("error_state"), False)
+            this.assertEqual(data.get("station_id"), id)
+            # this.assertEqual(data.get("id"), id)     
+    def test_post_state(this):
+        data = requests.post(URL + "/state/"+str(station_ids[0]), json={"station_id": station_ids[0], "state": 1}).json()
+        data_get_state = requests.get(URL + "/state/" + str(station_ids[0])).json()
+        this.assertTrue(data.get("success"))
+        this.assertEqual(data_get_state.get("error_message"), "")
+        this.assertEqual(data_get_state.get("error_state"), False)
+        this.assertEqual(data_get_state.get("station_id"), station_ids[0])
+        this.assertEqual(data_get_state.get("state"), 1)
+    def test_post_location(this):
+        data = requests.post(URL + "/location/new", json={"latitude": 123123.0, "longitude": 12341234.0}).json()
+        # print(data.get("station)
+        this.assertFalse(data.get("station_id") == None)
+        data_get_location = requests.get(URL + "/location/" + str(data.get("station_id"))).json()
+        this.assertEqual(data_get_location.get("error_message"), "")
+        this.assertEqual(data_get_location.get("error_state"), False)
+        this.assertEqual(data_get_location.get("latitude"), 123123.0)
+        this.assertEqual(data_get_location.get("longitude"), 12341234.0)
 
 if __name__ == "__main__":
-    database.connect(username="test", password="conn123", url="0.0.0.0", database="train_test", fresh_migrate=True)
-
-    # Create new database
-
-
-    # Connect
-    #database.db = database.db.train_test
-    seed_database()
-    #unittest.main()
-    #test_seed()
+    get_locations()
     unittest.main()
-    
-    # Destroy database
 
