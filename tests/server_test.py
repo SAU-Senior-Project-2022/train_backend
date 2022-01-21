@@ -1,13 +1,5 @@
 import unittest
-from argparse import ArgumentParser
-import threading
-from server import start_server
-import database
-#import server
 import requests
-#from random_word import RandomWords
-import random
-#seed database
 URL = "http://localhost:5000"
 
 station_ids = []

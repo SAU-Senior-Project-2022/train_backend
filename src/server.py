@@ -7,7 +7,7 @@ import endpoints
 
 def start_server(
     ip: str="0.0.0.0", port: int=5000,
-    username: str="root", password: str="", database_name: str="train", db_url: str="localhost",
+    username: str="root", password: str="", database_name: str="train", db_url: str="localhost", db_port: int=3307,
     http: bool=False, certPath: str=None, keyPath: str=None,
     debug: bool=False, seed: bool=False, fresh_migration: bool=False) -> None:
     """Starts the http server
@@ -31,7 +31,7 @@ def start_server(
             Defaults to False.
     """
     # Connect to database
-    database.connect(url=db_url, username=username, password=password, 
+    database.connect(url=db_url, username=username, password=password, port=db_port,
         database=database_name, fresh_migrate=(fresh_migration and debug))
     
     # Assign classes to endpoints    

@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   flask:
-    build: .
+    build: src/
     ports:
       - "5000:5000"
     links:
@@ -11,5 +11,3 @@ services:
     environment:
       MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
       MARIADB_DATABASE: "train"
-    ports:
-      - "3307:3306"

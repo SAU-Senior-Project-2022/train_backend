@@ -5,10 +5,11 @@
   - [Features in main.py](#features-in-mainpy)
   - [Production](#production)
   - [Development](#development)
+  - [Testing](#testing)
 
 ## Building
 
-The simplest method to deploy this backend is to just use docker. Once [`docker-compose`](https://docs.docker.com/compose/install/) is installed on your device, just run `docker-compose up -d`, and on port 5000 you will have the webserver running. **TODO** CURRENTLY, port 3307 is also exposed, which is the mariadb port **TODO**. This will be closed before the end of development.
+The simplest method to deploy this backend is to just use docker. Once [`docker-compose`](https://docs.docker.com/compose/install/) is installed on your device, just run `docker-compose up -d`, and on port 5000 you will have the webserver running.
 
 ## Features in main.py
 
@@ -30,4 +31,4 @@ If this directory is opened in `Visual Studio Code`, there are 3 debugger launch
 
 ## Testing
 
-If you wish to test the server. You must run the server with the flags `--debug`, `--fresh`, `--seed` (You can add other flags if you need to be more specific) and run the `server_test.py` application with the server loaded in order for the testing application to connect to the server.
+If you wish to test the [server](src/main.py). You must run the server with the flags `--debug`, `--fresh`, `--seed` (You can add other flags if you need to be more specific) and run the [`server_test.py`](tests/server_test.py) application with the server loaded in order for the testing application to connect to the server.
