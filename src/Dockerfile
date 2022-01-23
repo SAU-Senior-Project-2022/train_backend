@@ -9,4 +9,8 @@ RUN ls -l ./
 RUN which python
 RUN python --version
 
+<<<<<<< Updated upstream
 ENTRYPOINT ["/usr/local/share/main.py", "--debug", "--http", "--db-url", "mariadb", "--fresh","--seed"]
+=======
+ENTRYPOINT ["/usr/local/share/main.py", "--debug", "--http", "--db-url", "mariadb","--seed"]
+>>>>>>> Stashed changes

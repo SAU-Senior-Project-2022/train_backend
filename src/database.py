@@ -46,11 +46,21 @@ def __migrate_fresh(database_name: str) -> bool:
     Returns:
         bool: True
     """
+<<<<<<< Updated upstream
     if(check_tables('history', database_name)):
         __drop_table('history')
     if(check_tables('station', database_name)):
         __drop_table('station')
     create_database()
+=======
+    __drop_table('*')
+    create_database()
+    # if(check_tables('history', database_name)):
+    #     __drop_table('history')
+    # if(check_tables('station', database_name)):
+    #     __drop_table('station')
+    # create_database()
+>>>>>>> Stashed changes
     return True
 
 
@@ -138,6 +148,11 @@ def seed_database() -> bool:
     Returns:
         bool: True
     """
+<<<<<<< Updated upstream
+=======
+
+    __migrate_fresh(connection.database)
+>>>>>>> Stashed changes
     station_ids = []
     for i in range(22):
         station_id = insert_new_station(123123,12341234)
