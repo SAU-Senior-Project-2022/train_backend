@@ -82,7 +82,7 @@ def __check_database_create(database_name: str) -> bool:
         database_name (str): Name of database to use
     """
     if ((check_tables('history', database_name) != check_tables('station', database_name))):
-        if(check_tables('history')):
+        if(check_tables('history', database_name)):
             __drop_table('history')
         else:
             __drop_table('station')
