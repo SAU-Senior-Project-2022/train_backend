@@ -5,6 +5,11 @@ import random
 
 connection = None
 db = None 
+__uname = None
+__pass = None
+__url = None
+__port = None
+__dbname = None
 
 def connect(username: str, password: str, 
     url: str="localhost", port: int=3306, 
@@ -19,8 +24,12 @@ def connect(username: str, password: str,
         database (str, optional): Name of the database to connect to. Defaults to "train".
         fresh_migrate (bool, optional): If True, deletes database and creates fresh empty database. Defaults to False.
     """
-    global db
-    global connection
+    global db, connection, __uname, __pass, __url, __port, __dbname
+    __uname = username
+    __pass = password
+    __url = url
+    __port = port
+    __dbname = database
     try:
         connection = mariadb.connect(
             user=username,
@@ -38,6 +47,25 @@ def connect(username: str, password: str,
     __check_database_create(database)
     if seed:
         seed_database()
+
+def __auto_connect():
+    global connection, db
+    try:
+        db.execute("SELECT 1;")
+    except:
+        try:
+            connection = mariadb.connect(
+                user=__uname,
+                password=__pass,
+                host=__url,
+                port=__port,
+                database=__dbname
+            )
+            db=connection.cursor()
+        except mariadb.Error as e:
+            print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
+            exit(2)
+    return True
 
 def __drop_tables(database_name: str) -> bool:
     """Creates new empty database
@@ -169,6 +197,7 @@ def getHistory(id: int) -> list[data.history]:
     Returns:
         list[data.history]: List of history
     """
+    __auto_connect()
     try:
         db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC", (id,))
     except:
@@ -187,7 +216,8 @@ def getState(id: int) -> data.history:
 
     Returns:
         data.history: latest station history
-    """    
+    """  
+    __auto_connect()  
     try:
         db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
     except:
@@ -206,6 +236,7 @@ def getStation(id: int) -> data.station:
     Returns:
         data.station: Station info
     """
+    __auto_connect()
     try:
         db.execute("SELECT id, latitude, longitude FROM station WHERE id=?;", (id,))
     except:
@@ -225,6 +256,7 @@ def setState(id: int, state: int) -> dict:
     Returns:
         dict: "success" or "error"
     """
+    __auto_connect()
     if (state == None):
         return {"error": f"Received a state of None"}
     try:
@@ -244,6 +276,7 @@ def insert_new_station(lat: float, lon: float) -> dict:
     Returns:
         dict: {'station_id': id}
     """
+    __auto_connect
     try:
         db.execute("INSERT INTO station (latitude, longitude) VALUES (?, ?);", (float(lat), float(lon)))
         connection.commit()
@@ -260,6 +293,7 @@ def getStationList() -> list[data.station]:
     Returns:
         list[data.station]: List of stations
     """
+    __auto_connect()
     try:
         db.execute("SELECT id, latitude, longitude FROM station;")
     except:

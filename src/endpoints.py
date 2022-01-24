@@ -92,5 +92,4 @@ class documentationSite(Resource):
     """
 
     def get(self):
-        print(exists('./src/site/documentation.html'))
         return current_app.send_static_file('documentation.html')
