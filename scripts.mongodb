@@ -1,4 +1,0 @@
-// MongoDB Playground
-use('train');
-
-db.getCollectionNames()

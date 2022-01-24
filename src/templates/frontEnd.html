@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <title>Insert New Station</title>
+    </head>
+
+    
+
+    <body>
+        <form>
+            <label for="fname">Latitude:</label><br>
+            <input type="text" id="latitude" name="fname" value=""><br>
+            <label for="lname">Longitude:</label><br>
+            <input type="text" id="longitude" name="lname" value="">
+        </form>
+        <br>
+        <button type="button" onclick="send()">Submit</button>
+        <p>New station id:</p>
+        <p id="newStationId">None</p>
+       
+       
+       <script src="../static/jquery-3.6.0.min.js"></script>
+       <script>
+        function send() {
+            let latitude = $("#latitude").val();
+            let longitude = $("#longitude").val();
+            console.log(latitude);
+            console.log(longitude);
+            $.ajax({
+            type: "POST",
+            url: "http://0.0.0.0:5000/location/new",
+            dataType: 'json',
+            data: JSON.stringify({"latitude": latitude, "longitude": longitude}),
+            contentType: "application/json",
+            success: function(data){
+                console.log(data);
+                $("#newStationId").text(data.station_id);
+            },error: function( xhr, status, errorThrown){
+                console.log('Error: ' + errorThrown );
+                console.log('Status: ' + status );
+                console.dir( xhr );
+            },
+            });
+        }
+        
+        </script>
+    </body>
+</html>

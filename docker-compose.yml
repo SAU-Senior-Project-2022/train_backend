@@ -1,20 +1,16 @@
-version: "3.9"  # optional since v1.27.0
+version: "3.9"
 services:
   flask:
-    build: .
+    build: src/
     ports:
       - "5000:5000"
-    volumes:
-      - ./main.py:/usr/local/share/train_backend
-      - ./server.py:/usr/local/share/server.py
-      - ./database.py:/usr/local/share/database.py
-      - logvolume01:/var/log
-    links:
-      - mongo
-    command: ["python", "/usr/local/share/train_backend"]
-  mongo:
-    image: mongo
-    ports:
-      - "27017:27017"
-volumes:
-  logvolume01: {}
+    restart: on-failure
+    depends_on:
+      - mariadb
+    links: 
+        - mariadb
+  mariadb:
+    image: mariadb:10.3.32-focal
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: "train"
