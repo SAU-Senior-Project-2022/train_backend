@@ -6,6 +6,7 @@
   - [Production](#production)
   - [Development](#development)
   - [Testing](#testing)
+  - [Documentation and Station Registration](#documentation-and-station-registration)
 
 ## Building
 
@@ -32,3 +33,9 @@ If this directory is opened in `Visual Studio Code`, there are 3 debugger launch
 ## Testing
 
 If you wish to test the [server](src/main.py). You must run the server with the flags `--debug`, `--fresh`, `--seed` (You can add other flags if you need to be more specific) and run the [`server_test.py`](tests/server_test.py) application with the server loaded in order for the testing application to connect to the server.
+
+## Documentation and Station Registration
+
+If you wish to view the documentation, navigate to the `/site/documentation` endpoint in a browser.
+
+If you wish to register a new "station", navigate to the `/site/new` endpoint in a browser.
