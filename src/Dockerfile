@@ -5,12 +5,5 @@ RUN pip install -r /tmp/requirements.txt
 WORKDIR /usr/local/share
 COPY ./*.py ./
 RUN chmod +x main.py
-RUN ls -l ./
-RUN which python
-RUN python --version
 
-<<<<<<< Updated upstream
-ENTRYPOINT ["/usr/local/share/main.py", "--debug", "--http", "--db-url", "mariadb", "--fresh","--seed"]
-=======
-ENTRYPOINT ["/usr/local/share/main.py", "--debug", "--http", "--db-url", "mariadb","--seed"]
->>>>>>> Stashed changes
+ENTRYPOINT ["/usr/local/share/main.py", "--http", "--db-url", "mariadb","--seed"]

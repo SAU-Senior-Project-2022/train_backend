@@ -11,6 +11,8 @@ services:
         - mariadb
   mariadb:
     image: mariadb:10.3.32-focal
+    ports:
+      - "3306:3306"
     environment:
       MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
       MARIADB_DATABASE: "train"

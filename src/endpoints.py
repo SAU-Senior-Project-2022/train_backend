@@ -1,11 +1,13 @@
+from flask_cors import CORS # CORS
 import database
 import data
-import json
 from flask import jsonify, request, Flask
 from flask_restful import Resource, Api
+import json
 from sys import stderr
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
 
 # Create classes to handle requests

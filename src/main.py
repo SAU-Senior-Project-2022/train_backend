@@ -31,21 +31,18 @@ if __name__ == "__main__":
         help="Provide the path to the key file for the server. \
         If not provided, it is provided by the server.", required=False)
     
-    parser.add_argument("--debug", dest="debug", default=False, \
-        help="The server will be in debug mode", required=False, \
-        action="store_true")
     parser.add_argument("--fresh", dest="fresh", default=False, \
-        help="Will empty the database. Requires --debug flag.", required=False, \
+        help="Will empty the database.", required=False, \
         action="store_true")
     parser.add_argument("--seed", dest="seed", default=False, \
-        help="Will reseed the database with random values. \
-        Requires --debug flag.", required=False, action="store_true")
+        help="Will reseed the database with random values, deletes entire database.",
+        required=False, action="store_true")
     
     args = parser.parse_args()
     server.start_server(
         ip=args.ip, port=args.port, 
         username=args.user, password=args.password, database_name=args.db_name, db_url=args.db_url, db_port=int(args.db_port),
         http=args.http, certPath=args.cert, keyPath=args.key,
-        debug=args.debug, seed=args.seed, fresh_migration=args.fresh)
+        seed=args.seed, fresh_migration=args.fresh)
 else:
     server.start_server()

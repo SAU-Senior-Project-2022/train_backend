@@ -6,7 +6,6 @@ station_ids = []
 def get_locations():
     data = requests.get(URL + "/location").json()
     for entry in data:
-        print(entry)
         station_ids.append(entry["id"])
 class TestServerMethods(unittest.TestCase):
     def test_my_life(this):
