@@ -191,7 +191,7 @@ def getState(id: int) -> data.history:
     try:
         db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
     except:
-        return [data.history(error_message="There was an error in the database")]
+        return data.history(error_message="There was an error in the database")
     row = db.fetchone()
     if (row == None):
         return data.history(error_message="State not found")
@@ -250,7 +250,9 @@ def insert_new_station(lat: float, lon: float) -> dict:
     except mariadb.Error as e:
         print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
         return [{"error": "There was an error in the database"}]
-    return {'station_id': db.lastrowid}
+    new_station_id = db.lastrowid
+    setState(new_station_id, 0)
+    return {'station_id': new_station_id}
 
 def getStationList() -> list[data.station]:
     """Gets list of all stations

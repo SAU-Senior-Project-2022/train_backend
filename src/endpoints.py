@@ -1,4 +1,4 @@
-from flask_cors import CORS # CORS
+from flask_cors import CORS
 import database
 import data
 from flask import jsonify, request, Flask
@@ -10,13 +10,14 @@ app = Flask(__name__)
 CORS(app)
 api = Api(app)
 
+
 # Create classes to handle requests
 class state(Resource):
     """deals with `GET` and `POST` for the state of a station
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
-    """        
+    """      
     def get(self, station_id):
         resp = database.getState(station_id)
         return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
@@ -51,6 +52,7 @@ class location(Resource):
         #     return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
         #     retu
     def post(self, station_id):
+        print("HERE")
         if (station_id == 'new'):
             data = request.json
             if ((data.get('latitude') == None) or (data.get('longitude') == None)):

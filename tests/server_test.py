@@ -28,6 +28,7 @@ class TestServerMethods(unittest.TestCase):
         for id in station_ids:
             data = requests.get(URL + "/state/" + str(id)).json()
             # for entry in data:
+            print(data)
             this.assertEqual(data.get("error_message"), "")
             this.assertEqual(data.get("error_state"), False)
             this.assertEqual(data.get("station_id"), id)
