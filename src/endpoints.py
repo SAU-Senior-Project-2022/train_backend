@@ -1,7 +1,8 @@
 from flask_cors import CORS
 import database
 import data
-from flask import jsonify, request, Flask
+from flask import jsonify, request, Flask, current_app, Response, render_template
+from os.path import exists
 from flask_restful import Resource, Api
 import json
 from sys import stderr
@@ -52,7 +53,6 @@ class location(Resource):
         #     return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
         #     retu
     def post(self, station_id):
-        print("HERE")
         if (station_id == 'new'):
             data = request.json
             if ((data.get('latitude') == None) or (data.get('longitude') == None)):
@@ -72,3 +72,25 @@ class locationList(Resource):
     def get(self):
         resp = database.getStationList()
         return jsonify(json.loads(json.dumps(resp, cls=data.station.StationEncoder)))
+
+class createSite(Resource):
+    """deals with rendering the basic location creation site
+
+    Args:
+        Resource (flask-restx.Resouce): imported from flask-restx
+    """
+    def get(self):
+        print("here")
+        #return send_from_directory('static/new', 'frontEnd.html')
+        return Response(render_template('frontEnd.html'))
+
+class documentationSite(Resource):
+    """deals with rendering the basic location creation site
+
+    Args:
+        Resource (flask-restx.Resouce): imported from flask-restx
+    """
+
+    def get(self):
+        print(exists('./src/site/documentation.html'))
+        return current_app.send_static_file('documentation.html')
