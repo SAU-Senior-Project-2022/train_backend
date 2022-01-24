@@ -4,3 +4,4 @@ flask-restful
 cryptography
 mariadb
 argparse
+watchdog

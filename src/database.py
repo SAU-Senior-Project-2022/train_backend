@@ -8,7 +8,7 @@ db = None
 
 def connect(username: str, password: str, 
     url: str="localhost", port: int=3306, 
-    database: str="train", fresh_migrate: bool=False):
+    database: str="train", fresh_migrate: bool=False, seed: bool=False):
     """Connects to database with specified arguments.
 
     Args:
@@ -33,11 +33,13 @@ def connect(username: str, password: str,
         print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
         exit(2)
     db=connection.cursor()
-    if(fresh_migrate):
-        __migrate_fresh(database)
+    if(seed or fresh_migrate):
+        __drop_tables(database)
     __check_database_create(database)
+    if seed:
+        seed_database()
 
-def __migrate_fresh(database_name: str) -> bool:
+def __drop_tables(database_name: str) -> bool:
     """Creates new empty database
 
     Args:
@@ -46,15 +48,14 @@ def __migrate_fresh(database_name: str) -> bool:
     Returns:
         bool: True
     """
-    if(check_tables('history', database_name)):
+    if(__check_table('history', database_name)):
         __drop_table('history')
-    if(check_tables('station', database_name)):
+    if(__check_table('station', database_name)):
         __drop_table('station')
-    create_database()
     return True
 
 
-def check_tables(tableName: str, database_name: str) -> bool:
+def __check_table(tableName: str, database_name: str) -> bool:
     """Checks if `tableName` exists in `database_name`
 
     Args:
@@ -67,7 +68,7 @@ def check_tables(tableName: str, database_name: str) -> bool:
     try:
         db.execute("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = ?) AND (TABLE_NAME = ?)", (database_name, tableName))
     except:
-        print("(database.py:check_tables) SELECT failed")
+        print("(database.py:__check_table) SELECT failed", file=stderr)
         exit(2)
     if (db.fetchone()[0] > 0):
         return True
@@ -81,16 +82,14 @@ def __check_database_create(database_name: str) -> bool:
     Args:
         database_name (str): Name of database to use
     """
-    if ((check_tables('history', database_name) != check_tables('station', database_name))):
-        if(check_tables('history', database_name)):
-            __drop_table('history')
-        else:
-            __drop_table('station')
+    if(not __check_table('station', database_name)): # TODO ENFORCE ORDER
+        __create_table_station()
+
+    if(not __check_table('history', database_name)):
+        __create_table_history()
         
-    if (not check_tables('history', database_name) and not check_tables('station', database_name)):
-        create_database()
-    elif((check_tables('history', database_name) != check_tables('station', database_name))):
-        print("(database.py:__check_database_create) Could not drop tables properly")
+    if((not __check_table('history', database_name)) or (not __check_table('station', database_name))):
+        print("(database.py:__check_database_create) Could not drop tables properly", file=stderr)
         exit(2)
     return True
 
@@ -108,7 +107,7 @@ def __drop_table(table_name: str) -> bool:
             db.execute(f"DROP TABLE {table_name};")
         connection.commit()
     except:
-        print(f"(database.py:__drop_table) Failed to drop table {table_name}")
+        print(f"(database.py:__drop_table) Failed to drop table {table_name}", file=stderr)
         exit(2)
     return True
 
@@ -118,17 +117,30 @@ def create_database() -> bool:
     Returns:
         bool: True
     """
+    __create_table_station()
+    __create_table_history() ## TODO ENFORCE ORDER
+    return True
+
+def __create_table_station():
+    try:
+        db.execute("CREATE TABLE `station` (`id` int(11) NOT NULL,`latitude` float(20,10) NOT NULL,`longitude` float(20,10) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
+        db.execute("ALTER TABLE `station` ADD PRIMARY KEY (`id`);")
+        db.execute("ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
+        connection.commit()
+    except:
+        print("(database.py:__create_table_station) Failed to create database from scratch", file=stderr)
+        exit(2)
+    return True
+
+def __create_table_history():
     try:
         db.execute("CREATE TABLE `history` (`id` int(11) NOT NULL,`state` tinyint(1) NOT NULL,`date` datetime NOT NULL DEFAULT current_timestamp(),`station_id` int(11) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
-        db.execute("CREATE TABLE `station` (`id` int(11) NOT NULL,`latitude` float(20,10) NOT NULL,`longitude` float(20,10) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;")
         db.execute("ALTER TABLE `history` ADD PRIMARY KEY (`id`),ADD KEY `fk_history_station` (`station_id`);")
-        db.execute("ALTER TABLE `station` ADD PRIMARY KEY (`id`);")
         db.execute("ALTER TABLE `history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
-        db.execute("ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
         db.execute("ALTER TABLE `history` ADD CONSTRAINT `fk_history_station` FOREIGN KEY (`station_id`) REFERENCES `station` (`id`);")
         connection.commit()
     except:
-        print("(database.py:create_database) Failed to create database from scratch")
+        print("(database.py:__create_table_history) Failed to create database from scratch", file=stderr)
         exit(2)
     return True
 
@@ -139,14 +151,13 @@ def seed_database() -> bool:
         bool: True
     """
     station_ids = []
-    for i in range(22):
+    for i in range(24):
         station_id = insert_new_station(123123,12341234)
-        print(station_id)
-        station_ids.append(station_id)
+        print("Station ID:",station_id)
+        station_ids.append(station_id.get("station_id"))
     for i in station_ids:
-        for j in range(22):
-            #print(i)
-            setState(i.get('station_id'), int(random.getrandbits(1)))
+        for _ in range(23):
+            setState(i, int(random.getrandbits(1)))
     return True
 
 def getHistory(id: int) -> list[data.history]:
@@ -180,7 +191,7 @@ def getState(id: int) -> data.history:
     try:
         db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
     except:
-        return [data.history(error_message="There was an error in the database")]
+        return data.history(error_message="There was an error in the database")
     row = db.fetchone()
     if (row == None):
         return data.history(error_message="State not found")
@@ -218,9 +229,9 @@ def setState(id: int, state: int) -> dict:
         return {"error": f"Received a state of None"}
     try:
         db.execute("INSERT INTO history (state, station_id) VALUES (?, ?);", (state, id))
+        connection.commit()
     except:
         return [{"error": "There was an error in the database"}]
-    connection.commit()
     return {"success": int(getState(id).station_id) == int(id)}
 
 def insert_new_station(lat: float, lon: float) -> dict:
@@ -235,10 +246,13 @@ def insert_new_station(lat: float, lon: float) -> dict:
     """
     try:
         db.execute("INSERT INTO station (latitude, longitude) VALUES (?, ?);", (float(lat), float(lon)))
-    except:
+        connection.commit()
+    except mariadb.Error as e:
+        print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
         return [{"error": "There was an error in the database"}]
-    connection.commit()
-    return {'station_id': db.lastrowid}
+    new_station_id = db.lastrowid
+    setState(new_station_id, 0)
+    return {'station_id': new_station_id}
 
 def getStationList() -> list[data.station]:
     """Gets list of all stations

@@ -6,7 +6,6 @@ station_ids = []
 def get_locations():
     data = requests.get(URL + "/location").json()
     for entry in data:
-        print(entry)
         station_ids.append(entry["id"])
 class TestServerMethods(unittest.TestCase):
     def test_my_life(this):
@@ -29,6 +28,7 @@ class TestServerMethods(unittest.TestCase):
         for id in station_ids:
             data = requests.get(URL + "/state/" + str(id)).json()
             # for entry in data:
+            print(data)
             this.assertEqual(data.get("error_message"), "")
             this.assertEqual(data.get("error_state"), False)
             this.assertEqual(data.get("station_id"), id)
