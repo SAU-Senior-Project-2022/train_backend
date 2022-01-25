@@ -228,6 +228,8 @@ def getState(id: int) -> data.history:
     except:
         return data.history(error_message="There was an error in the database")
     row = db.fetchone()
+    db.close()
+    connection.close()
     if (row == None):
         return data.history(error_message="State not found")
     return data.history(row[0], row[1], row[2], row[3])
@@ -248,6 +250,8 @@ def getStation(id: int) -> data.station:
     except:
         return [data.history(error_message="There was an error in the database")]
     row = db.fetchone()
+    db.close()
+    connection.close()
     if (row == None):
         return data.station(error_message="Station not found")
     return data.station(row[0], row[1], row[2])
@@ -269,6 +273,8 @@ def setState(id: int, state: int) -> dict:
     try:
         db.execute("INSERT INTO history (state, station_id) VALUES (?, ?);", (state, id))
         connection.commit()
+        db.close()
+        connection.close()
     except:
         return [{"error": "There was an error in the database"}]
     return {"success": int(getState(id).station_id) == int(id)}
@@ -288,6 +294,8 @@ def insert_new_station(lat: float, lon: float) -> dict:
     try:
         db.execute("INSERT INTO station (latitude, longitude) VALUES (?, ?);", (float(lat), float(lon)))
         connection.commit()
+        db.close()
+        connection.close()
     except mariadb.Error as e:
         print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
         return [{"error": "There was an error in the database"}]
@@ -308,6 +316,8 @@ def getStationList() -> list[data.station]:
     except:
         return [{"error": "There was an error in the database"}]
     rows = db.fetchall()
+    db.close()
+    connection.close()
     if (rows == None):
         return [{"error": "No Stations found"}]
     else:
