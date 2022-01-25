@@ -44,7 +44,7 @@ def connect(username: str, password: str,
         )
     except mariadb.Error as e:
         print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
-        exit(2)
+        #exit(2)
     db=connection.cursor()
     if(seed or fresh_migrate):
         __drop_tables(database)
