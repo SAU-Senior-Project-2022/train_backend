@@ -37,7 +37,10 @@ def connect(username: str, password: str,
             host=url,
             port=port,
             database=database,
-            autocommit=True
+            connect_timeout=15,
+            write_timeout=15,
+            read_timeout=15
+            #autocommit=True
         )
     except mariadb.Error as e:
         print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
