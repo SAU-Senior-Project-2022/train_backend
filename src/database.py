@@ -50,6 +50,7 @@ def connect(username: str, password: str,
         seed_database()
 
 def __auto_connect():
+    print("__auto_connect")
     global connection, db
     try:
         db.execute("SELECT 1;")
@@ -200,6 +201,7 @@ def getHistory(id: int) -> list[data.history]:
         list[data.history]: List of history
     """
     __auto_connect()
+    print("getHistory")
     try:
         db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC", (id,))
     except:
@@ -218,8 +220,9 @@ def getState(id: int) -> data.history:
 
     Returns:
         data.history: latest station history
-    """  
+    """ 
     __auto_connect()  
+    print("getState")) 
     try:
         db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
     except:
@@ -239,6 +242,7 @@ def getStation(id: int) -> data.station:
         data.station: Station info
     """
     __auto_connect()
+    print("getStation")
     try:
         db.execute("SELECT id, latitude, longitude FROM station WHERE id=?;", (id,))
     except:
@@ -259,6 +263,7 @@ def setState(id: int, state: int) -> dict:
         dict: "success" or "error"
     """
     __auto_connect()
+    print("setState")
     if (state == None):
         return {"error": f"Received a state of None"}
     try:
@@ -278,7 +283,8 @@ def insert_new_station(lat: float, lon: float) -> dict:
     Returns:
         dict: {'station_id': id}
     """
-    __auto_connect
+    __auto_connect()
+    print("insert_new_station")
     try:
         db.execute("INSERT INTO station (latitude, longitude) VALUES (?, ?);", (float(lat), float(lon)))
         connection.commit()
