@@ -222,7 +222,7 @@ def getState(id: int) -> data.history:
         data.history: latest station history
     """ 
     __auto_connect()  
-    print("getState")) 
+    print("getState") 
     try:
         db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
     except:
@@ -302,6 +302,7 @@ def getStationList() -> list[data.station]:
         list[data.station]: List of stations
     """
     __auto_connect()
+    print("getStationList")
     try:
         db.execute("SELECT id, latitude, longitude FROM station;")
     except:
