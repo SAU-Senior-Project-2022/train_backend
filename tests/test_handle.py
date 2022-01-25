@@ -1,5 +1,6 @@
 import requests
-URL = "http://train.jpeckham.com:5000"
+import time
+URL = "http://localhost:5000"
 
 station_ids = []
 def get_locations():
@@ -16,3 +17,4 @@ def test_get_locations():
 if __name__ == "__main__":
     get_locations()
     test_get_locations()
+    time.sleep(0.5)

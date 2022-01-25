@@ -48,9 +48,9 @@ def start_server(
         endpoints.app.run(debug=False, host=ip, port=port)
     else:
         if (certPath == None or keyPath == None):
-            endpoints.app.run(debug=False, host=ip, port=port)
+            endpoints.app.run(debug=False, host=ip, port=port, threaded=True)
         else:
-            endpoints.app.run(debug=False, host=ip, port=port, ssl_context=(certPath, keyPath))
+            endpoints.app.run(debug=False, host=ip, port=port, ssl_context=(certPath, keyPath), threaded=False)
 
 
 if __name__ == "__main__":

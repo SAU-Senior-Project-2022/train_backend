@@ -55,22 +55,22 @@ def connect(username: str, password: str,
 def __auto_connect():
     print("__auto_connect")
     global connection, db
+    # try:
+    #     db.execute("SELECT 1;")
+    # except:
     try:
-        db.execute("SELECT 1;")
-    except:
-        try:
-            connection = mariadb.connect(
-                user=__uname,
-                password=__pass,
-                host=__url,
-                port=__port,
-                database=__dbname,
-                autocommit=True
-            )
-            db=connection.cursor()
-        except mariadb.Error as e:
-            print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
-            exit(2)
+        connection = mariadb.connect(
+            user=__uname,
+            password=__pass,
+            host=__url,
+            port=__port,
+            database=__dbname,
+            autocommit=True
+        )
+        db=connection.cursor()
+    except mariadb.Error as e:
+        print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
+        exit(2)
     return True
 
 def __drop_tables(database_name: str) -> bool:
@@ -249,7 +249,9 @@ def getStation(id: int) -> data.station:
     __auto_connect()
     print("getStation")
     try:
+        print("Before query")
         db.execute("SELECT id, latitude, longitude FROM station WHERE id=?;", (id,))
+        print("After query")
     except:
         return [data.history(error_message="There was an error in the database")]
     row = db.fetchone()
