@@ -281,7 +281,7 @@ def setState(id: int, state: int) -> dict:
         return [{"error": "There was an error in the database"}]
     return {"success": int(getState(id).station_id) == int(id)}
 
-def insert_new_station(lat: float, lon: float) -> dict:
+def insert_new_station(lat: float, lon: float, title: str="no title") -> dict:
     """Inserts new station into database
 
     Args:
@@ -294,7 +294,7 @@ def insert_new_station(lat: float, lon: float) -> dict:
     __auto_connect()
     #print("insert_new_station")
     try:
-        db.execute("INSERT INTO station (latitude, longitude) VALUES (?, ?);", (float(lat), float(lon)))
+        db.execute("INSERT INTO station (latitude, longitude, title) VALUES (?, ?, ?);", (float(lat), float(lon), title))
         connection.commit()
         # db.close()
         # connection.close()

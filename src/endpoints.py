@@ -25,10 +25,15 @@ class state(Resource):
     
     def post(self, station_id):
         data = request.json.get('state')
+        state = database.getState(station_id).state
+        print(state)
         if (data == None):
-            return jsonify({'error': "Missing json key: 'state'", 'correct': {"state": "true|false"}})
-        resp = database.setState(station_id, data)
-        return jsonify(resp)
+            return jsonify({'error': "Missing json key: 'state'", 'correct': {"state": "1|0"}})
+        if int(state) != int(data):
+            resp = database.setState(station_id, data)
+            return jsonify(resp)
+        else:
+            return {"success": True}
     
 class history(Resource):
     """deals with `GET` for the history of a station
@@ -57,7 +62,8 @@ class location(Resource):
             data = request.json
             if ((data.get('latitude') == None) or (data.get('longitude') == None)):
                 return jsonify({'error': "Did not receive all expected JSON fields", 'correct': {"latitude": "*location*", "longitude": "*location*"}})
-            resp = database.insert_new_station(data.get('latitude'), data.get('longitude'))
+            if data.get('title'):
+                resp = database.insert_new_station(data.get('latitude'), data.get('longitude'), data.get('title'))
             return jsonify(resp)
         else:
             return 404

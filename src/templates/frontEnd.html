@@ -8,6 +8,8 @@
 
     <body>
         <form>
+            <label for="ftitle">Title:</label><br>
+            <input type="text" id="title" name="ftitle" value=""><br>
             <label for="fname">Latitude:</label><br>
             <input type="text" id="latitude" name="fname" value=""><br>
             <label for="lname">Longitude:</label><br>
@@ -24,13 +26,14 @@
         function send() {
             let latitude = $("#latitude").val();
             let longitude = $("#longitude").val();
+            let title = $("#title").val();
             console.log(latitude);
             console.log(longitude);
             $.ajax({
             type: "POST",
             url: window.location.origin+"/location/new",
             dataType: 'json',
-            data: JSON.stringify({"latitude": latitude, "longitude": longitude}),
+            data: JSON.stringify({"latitude": latitude, "longitude": longitude, "title": title}),
             contentType: "application/json",
             success: function(data){
                 console.log(data);
