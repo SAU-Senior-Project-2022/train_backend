@@ -38,7 +38,7 @@ def start_server(
     
     # Run server
     if (http):
-        endpoints.app.run(debug=False, host=ip, port=port)
+        endpoints.app.run(debug=False, host=ip, port=port, threaded=False)
     else:
         if (certPath == None or keyPath == None):
             endpoints.app.run(debug=False, host=ip, port=port, threaded=False)
