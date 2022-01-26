@@ -29,8 +29,9 @@ def start_server(
             Defaults to False.
     """
     # Connect to database
-    database.connect(url=db_url, username=username, password=password, port=db_port,
-        database=database_name, fresh_migrate=(fresh_migration), seed=(seed))
+    # database.connect(url=db_url, username=username, password=password, port=db_port,
+    #     database=database_name, fresh_migrate=(fresh_migration), seed=(seed))
+    database.connect(database=database_name, fresh_migrate=(fresh_migration), seed=(seed))
     
     # Assign classes to endpoints    
     endpoints.api.add_resource(endpoints.state, '/state/<station_id>')
