@@ -32,7 +32,7 @@ def connect(database:str, seed:bool=False, fresh_migrate:bool=False) -> bool:
     # __port = port
     __dbname = database
     try:
-        connection = sqlite3.connect(database,check_same_thread=False, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
+        connection = sqlite3.connect(database,check_same_thread=False, detect_types=sqlite3.PARSE_DECLTYPES)
         # connection = mariadb.connect(
         #     user=username,
         #     password=password,
@@ -53,17 +53,27 @@ def connect(database:str, seed:bool=False, fresh_migrate:bool=False) -> bool:
     __check_database_create(database)
     if seed:
         seed_database()
+    #connection.close()
+    __auto_connect()
 
 def __auto_connect():
     # print("__auto_connect")
     # global connection, db
-    # try:
-    #     connection = sqlite3.connect(__dbname)
-    #     db=connection.cursor()
-    # except mariadb.Error as e:
-    #     print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
-    #     exit(2)
+    try:
+        global db, connection
+        connection = sqlite3.connect(__dbname,check_same_thread=False, detect_types=sqlite3.PARSE_DECLTYPES)
+        db=connection.cursor()
+    except sqlite3.Error as e:
+        print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
+        exit(2)
     return True
+
+def __auto_disconnect():
+    global db, connection
+    db.close()
+    connection.close()
+    db = None
+    connection = None
 
 def __drop_tables(database_name: str) -> bool:
     """Creates new empty database
@@ -197,7 +207,7 @@ def getHistory(id: int) -> list[data.history]:
     Returns:
         list[data.history]: List of history
     """
-    #__auto_connect()
+    __auto_connect()
     #print("getHistory")
     try:
         db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC", (id,))
@@ -208,6 +218,7 @@ def getHistory(id: int) -> list[data.history]:
     history_instances = []
     for row in rows:
         history_instances.append(data.history(row[0], row[1], row[2], row[3]))
+    __auto_disconnect()
     return history_instances
     
 def getState(id: int) -> data.history:
@@ -219,10 +230,10 @@ def getState(id: int) -> data.history:
     Returns:
         data.history: latest station history
     """ 
-    # __auto_connect()  
+    __auto_connect()  
     #print("getState") 
     try:
-        db.execute("SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1", (id,))
+        db.execute('SELECT id, state, date as "st [timestamp]", station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1', (id,))
     except:
         return data.history(error_message="There was an error in the database")
     row = db.fetchone()
@@ -230,6 +241,7 @@ def getState(id: int) -> data.history:
     # connection.close()
     if (row == None):
         return data.history(error_message="State not found")
+    __auto_disconnect()
     print(type(row[2]))
     return data.history(row[0], row[1], row[2], row[3])
 
@@ -242,7 +254,7 @@ def getStation(id: int) -> data.station:
     Returns:
         data.station: Station info
     """
-    # __auto_connect()
+    __auto_connect()
     #print("getStation")
     try:
         print("Before query")
@@ -252,6 +264,7 @@ def getStation(id: int) -> data.station:
         print(e)
         return [data.history(error_message="There was an error in the database")]
     row = db.fetchone()
+    __auto_disconnect()
     # db.close()
     # connection.close()
     if (row == None):
@@ -268,13 +281,14 @@ def setState(id: int, state: int) -> dict:
     Returns:
         dict: "success" or "error"
     """
-    # __auto_connect()
+    __auto_connect()
     #print("setState")
     if (state == None):
         return {"error": f"Received a state of None"}
     try:
         db.execute("INSERT INTO history (state, station_id) VALUES (?, ?);", (state, id))
         connection.commit()
+        __auto_disconnect()
         # db.close()
         # connection.close()
     except:
@@ -291,7 +305,7 @@ def insert_new_station(lat: float, lon: float) -> dict:
     Returns:
         dict: {'station_id': id}
     """
-    # __auto_connect()
+    __auto_connect()
     #print("insert_new_station")
     try:
         db.execute("INSERT INTO station (latitude, longitude) VALUES (?, ?);", (float(lat), float(lon)))
@@ -302,6 +316,7 @@ def insert_new_station(lat: float, lon: float) -> dict:
         print(f"(database.py:connect) Error connecting to MariaDB Platform: {e}", file=stderr)
         return [{"error": "There was an error in the database"}]
     new_station_id = db.lastrowid
+    __auto_disconnect()
     setState(new_station_id, 0)
     return {'station_id': new_station_id}
 
@@ -311,7 +326,7 @@ def getStationList() -> list[data.station]:
     Returns:
         list[data.station]: List of stations
     """
-    # __auto_connect()
+    __auto_connect()
     print("getStationList")
     try:
         db.execute("SELECT id, latitude, longitude FROM station;")
@@ -319,6 +334,7 @@ def getStationList() -> list[data.station]:
         print("e",e, file=stderr)
         return [{"error": "There was an error in the database"}]
     rows = db.fetchall()
+    __auto_disconnect()
     # db.close()
     # connection.close()
     if (rows == None):
