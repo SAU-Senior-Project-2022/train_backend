@@ -13,7 +13,7 @@ __url = None
 __port = None
 __dbname = None
 
-def connect(database:str, seed:bool=False, fresh_migrate:bool=False) -> bool:
+def connect(database:str, fresh_migrate:bool=False) -> bool:
     """Connects to database with specified arguments.
 
     Args:
@@ -33,26 +33,13 @@ def connect(database:str, seed:bool=False, fresh_migrate:bool=False) -> bool:
     __dbname = database
     try:
         connection = sqlite3.connect(database,check_same_thread=False, detect_types=sqlite3.PARSE_DECLTYPES)
-        # connection = mariadb.connect(
-        #     user=username,
-        #     password=password,
-        #     host=url,
-        #     port=port,
-        #     database=database,
-        #     connect_timeout=15,
-        #     write_timeout=15,
-        #     read_timeout=15
-        #     #autocommit=True
-        # )
     except sqlite3.Error as e:
         print(f"(database.py:connect) Error connecting to Sqlite Platform: {e}", file=stderr)
         exit(2)
     db=connection.cursor()
-    if(seed or fresh_migrate):
+    if(fresh_migrate):
         __drop_tables(database)
     __check_database_create(database)
-    if seed:
-        seed_database()
     #connection.close()
     __auto_connect()
 
@@ -138,7 +125,6 @@ def __drop_table(table_name: str) -> bool:
     Returns:
         bool: True
     """
-    print("Here")
     try:
         if (table_name in ['history', 'station']):
             db.execute(f"DROP TABLE {table_name};")
@@ -161,7 +147,7 @@ def create_database() -> bool:
 def __create_table_station():
     try:
         #CREATE TABLE [IF NOT EXISTS] [schema_name].table_name (column_1 data_type PRIMARY KEY,column_2 data_type NOT NULL,column_3 data_type DEFAULT 0,table_constraints) [WITHOUT ROWID];
-        db.execute("CREATE TABLE station (id INTEGER PRIMARY KEY NOT NULL, latitude DECIMAL(20,10) NOT NULL, longitude DECIMAL(20,10) NOT NULL)")
+        db.execute("CREATE TABLE station (id INTEGER PRIMARY KEY NOT NULL, title TEXT, latitude DECIMAL(30,16) NOT NULL, longitude DECIMAL(30,16) NOT NULL);")
         #db.execute("ALTER TABLE `station` ADD PRIMARY KEY (`id`);")
         #db.execute("ALTER TABLE `station` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;")
         connection.commit()
@@ -182,21 +168,21 @@ def __create_table_history():
         exit(2)
     return True
 
-def seed_database() -> bool:
-    """Seeds database with some test data
+# def seed_database() -> bool:
+#     """Seeds database with some test data
 
-    Returns:
-        bool: True
-    """
-    station_ids = []
-    for i in range(24):
-        station_id = insert_new_station(123123,12341234)
-        print("Station ID:",station_id)
-        station_ids.append(station_id.get("station_id"))
-    for i in station_ids:
-        for _ in range(23):
-            setState(i, int(random.getrandbits(1)))
-    return True
+#     Returns:
+#         bool: True
+#     """
+#     station_ids = []
+#     for i in range(24):
+#         station_id = insert_new_station(123123,12341234)
+#         print("Station ID:",station_id)
+#         station_ids.append(station_id.get("station_id"))
+#     for i in station_ids:
+#         for _ in range(23):
+#             setState(i, int(random.getrandbits(1)))
+#     return True
 
 def getHistory(id: int) -> list[data.history]:
     """Gets all history of a station
@@ -233,7 +219,7 @@ def getState(id: int) -> data.history:
     __auto_connect()  
     #print("getState") 
     try:
-        db.execute('SELECT id, state, date as "st [timestamp]", station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1', (id,))
+        db.execute('SELECT id, state, date, station_id FROM history WHERE station_id=? ORDER BY date DESC LIMIT 1', (id,))
     except:
         return data.history(error_message="There was an error in the database")
     row = db.fetchone()
@@ -258,7 +244,7 @@ def getStation(id: int) -> data.station:
     #print("getStation")
     try:
         print("Before query")
-        db.execute("SELECT id, latitude, longitude FROM station WHERE id=?;", (id,))
+        db.execute("SELECT id, latitude, longitude, title FROM station WHERE id=?;", (id,))
         print("After query")
     except sqlite3.Error as e:
         print(e)
@@ -269,7 +255,7 @@ def getStation(id: int) -> data.station:
     # connection.close()
     if (row == None):
         return data.station(error_message="Station not found")
-    return data.station(row[0], row[1], row[2])
+    return data.station(row[0], row[1], row[2], row[3])
 
 def setState(id: int, state: int) -> dict:
     """Sets the state of a station
@@ -329,7 +315,7 @@ def getStationList() -> list[data.station]:
     __auto_connect()
     print("getStationList")
     try:
-        db.execute("SELECT id, latitude, longitude FROM station;")
+        db.execute("SELECT id, latitude, longitude, title FROM station;")
     except sqlite3.Error as e:
         print("e",e, file=stderr)
         return [{"error": "There was an error in the database"}]
@@ -342,5 +328,5 @@ def getStationList() -> list[data.station]:
     else:
         return_array = []
         for row in rows:
-            return_array.append(data.station(row[0], row[1], row[2]))
+            return_array.append(data.station(row[0], row[1], row[2], row[3]))
         return return_array
