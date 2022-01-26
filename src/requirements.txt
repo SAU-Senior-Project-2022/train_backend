@@ -2,6 +2,4 @@ flask
 flask-cors
 flask-restful
 cryptography
-mariadb
 argparse
-watchdog
