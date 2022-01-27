@@ -32,7 +32,8 @@ def start_server(
     #endpoints.api.add_resource(endpoints.history, '/history/<station_id>')
     endpoints.api.add_resource(endpoints.location, '/location/<station_id>')
     endpoints.api.add_resource(endpoints.locationList, '/location')
-    endpoints.api.add_resource(endpoints.createSite, '/site/new')
+    endpoints.api.add_resource(endpoints.createStationSite, '/site/location/new')
+    endpoints.api.add_resource(endpoints.createStateSite, '/site/state/new')
     endpoints.api.add_resource(endpoints.documentationSite, '/site/documentation')
 
     

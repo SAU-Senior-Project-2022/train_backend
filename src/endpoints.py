@@ -24,6 +24,7 @@ class state(Resource):
         return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
     
     def post(self, station_id):
+        print(request.json)
         data = request.json.get('state')
         state = database.getState(station_id).state
         print(state)
@@ -79,16 +80,25 @@ class locationList(Resource):
         resp = database.getStationList()
         return jsonify(json.loads(json.dumps(resp, cls=data.station.StationEncoder)))
 
-class createSite(Resource):
+class createStationSite(Resource):
     """deals with rendering the basic location creation site
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
     """
     def get(self):
-        print("here")
         #return send_from_directory('static/new', 'frontEnd.html')
-        return Response(render_template('frontEnd.html'))
+        return Response(render_template('station_create.html'))
+
+class createStateSite(Resource):
+    """deals with rendering the basic location creation site
+
+    Args:
+        Resource (flask-restx.Resouce): imported from flask-restx
+    """
+    def get(self):
+        #return send_from_directory('static/new', 'frontEnd.html')
+        return Response(render_template('state_create.html'))
 
 class documentationSite(Resource):
     """deals with rendering the basic location creation site
