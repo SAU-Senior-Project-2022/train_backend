@@ -38,4 +38,4 @@ If you wish to test the [server](src/main.py). You must run the server with the 
 
 If you wish to view the documentation, navigate to the [Backend Site](http://train.jpeckham.com:5000/site/documentation) endpoint in a browser.
 
-If you wish to register a new "station", navigate to the `/site/new` endpoint in a browser.
+If you wish to register a new "station", navigate to the [`/site/new`](http://train.jpeckham.com:5000/site/new) endpoint in a browser.
