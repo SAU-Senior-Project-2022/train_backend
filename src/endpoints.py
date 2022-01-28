@@ -63,8 +63,7 @@ class location(Resource):
             data = request.json
             if ((data.get('latitude') == None) or (data.get('longitude') == None)):
                 return jsonify({'error': "Did not receive all expected JSON fields", 'correct': {"latitude": "*location*", "longitude": "*location*"}})
-            if data.get('title'):
-                resp = database.insert_new_station(data.get('latitude'), data.get('longitude'), data.get('title'))
+            resp = database.insert_new_station(data.get('latitude'), data.get('longitude'), data.get('title'))
             return jsonify(resp)
         else:
             return 404
