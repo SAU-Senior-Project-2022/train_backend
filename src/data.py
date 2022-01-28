@@ -18,10 +18,10 @@ class history(object):
     class HistoryEncoder(json.JSONEncoder):
         def default(self, o):
             if (o.error_state):
-                print("Here")
                 return { "error_message": o.error_message }
             else:
-                o.date = {"year":o.date.year, "month":o.date.month, "day":o.date.day, "hour":o.date.hour, "minute":o.date.minute, "second":o.date.second}
+                # o.date = {"year":o.date.year, "month":o.date.month, "day":o.date.day, "hour":o.date.hour, "minute":o.date.minute, "second":o.date.second}
+                o.date = o.date.timestamp()
                 return o.__dict__
 
 class station(object):
