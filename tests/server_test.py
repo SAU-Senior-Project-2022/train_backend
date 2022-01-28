@@ -1,6 +1,7 @@
 import unittest
 import requests
-URL = "http://0.0.0.0:5000"
+# URL = "http://train.jpeckham.com:5000"
+URL = "http://localhost:5000"
 
 station_ids = []
 def get_locations():
@@ -22,13 +23,12 @@ class TestServerMethods(unittest.TestCase):
             this.assertEqual(data.get("error_message"), "")
             this.assertEqual(data.get("error_state"), False)
             this.assertEqual(data.get("id"), id)
-            this.assertEqual(data.get("latitude"), 123123.0)
-            this.assertEqual(data.get("longitude"), 12341234.0)
+            this.assertNotEqual(data.get("latitude"), None)
+            this.assertNotEqual(data.get("longitude"), None)
     def test_get_state(this):
         for id in station_ids:
             data = requests.get(URL + "/state/" + str(id)).json()
             # for entry in data:
-            print(data)
             this.assertEqual(data.get("error_message"), "")
             this.assertEqual(data.get("error_state"), False)
             this.assertEqual(data.get("station_id"), id)
@@ -43,7 +43,6 @@ class TestServerMethods(unittest.TestCase):
         this.assertEqual(data_get_state.get("state"), 1)
     def test_post_location(this):
         data = requests.post(URL + "/location/new", json={"latitude": 123123.0, "longitude": 12341234.0}).json()
-        # print(data.get("station)
         this.assertFalse(data.get("station_id") == None)
         data_get_location = requests.get(URL + "/location/" + str(data.get("station_id"))).json()
         this.assertEqual(data_get_location.get("error_message"), "")

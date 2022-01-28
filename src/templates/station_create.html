@@ -8,6 +8,8 @@
 
     <body>
         <form>
+            <label for="ftitle">Title:</label><br>
+            <input type="text" id="title" name="ftitle" value=""><br>
             <label for="fname">Latitude:</label><br>
             <input type="text" id="latitude" name="fname" value=""><br>
             <label for="lname">Longitude:</label><br>
@@ -19,18 +21,19 @@
         <p id="newStationId">None</p>
        
        
-       <script src="../static/jquery-3.6.0.min.js"></script>
-       <script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script>
         function send() {
             let latitude = $("#latitude").val();
             let longitude = $("#longitude").val();
+            let title = $("#title").val();
             console.log(latitude);
             console.log(longitude);
             $.ajax({
             type: "POST",
-            url: "http://0.0.0.0:5000/location/new",
+            url: window.location.origin+"/location/new",
             dataType: 'json',
-            data: JSON.stringify({"latitude": latitude, "longitude": longitude}),
+            data: JSON.stringify({"latitude": latitude, "longitude": longitude, "title": title}),
             contentType: "application/json",
             success: function(data){
                 console.log(data);

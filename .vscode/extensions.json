@@ -3,6 +3,6 @@
         "njpwerner.autodocstring",
         "ms-python.python",
         "magicstack.magicpython",
-        "mongodb.mongodb-vscode"
+        //"mongodb.mongodb-vscode"
     ],
 }

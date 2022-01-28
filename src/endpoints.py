@@ -24,11 +24,17 @@ class state(Resource):
         return jsonify(json.loads(json.dumps(resp, cls=data.history.HistoryEncoder)))
     
     def post(self, station_id):
+        print(request.json)
         data = request.json.get('state')
+        state = database.getState(station_id).state
+        print(state)
         if (data == None):
-            return jsonify({'error': "Missing json key: 'state'", 'correct': {"state": "true|false"}})
-        resp = database.setState(station_id, data)
-        return jsonify(resp)
+            return jsonify({'error': "Missing json key: 'state'", 'correct': {"state": "1|0"}})
+        if int(state) != int(data):
+            resp = database.setState(station_id, data)
+            return jsonify(resp)
+        else:
+            return {"success": True}
     
 class history(Resource):
     """deals with `GET` for the history of a station
@@ -57,7 +63,7 @@ class location(Resource):
             data = request.json
             if ((data.get('latitude') == None) or (data.get('longitude') == None)):
                 return jsonify({'error': "Did not receive all expected JSON fields", 'correct': {"latitude": "*location*", "longitude": "*location*"}})
-            resp = database.insert_new_station(data.get('latitude'), data.get('longitude'))
+            resp = database.insert_new_station(data.get('latitude'), data.get('longitude'), data.get('title'))
             return jsonify(resp)
         else:
             return 404
@@ -73,16 +79,25 @@ class locationList(Resource):
         resp = database.getStationList()
         return jsonify(json.loads(json.dumps(resp, cls=data.station.StationEncoder)))
 
-class createSite(Resource):
+class createStationSite(Resource):
     """deals with rendering the basic location creation site
 
     Args:
         Resource (flask-restx.Resouce): imported from flask-restx
     """
     def get(self):
-        print("here")
         #return send_from_directory('static/new', 'frontEnd.html')
-        return Response(render_template('frontEnd.html'))
+        return Response(render_template('station_create.html'))
+
+class createStateSite(Resource):
+    """deals with rendering the basic location creation site
+
+    Args:
+        Resource (flask-restx.Resouce): imported from flask-restx
+    """
+    def get(self):
+        #return send_from_directory('static/new', 'frontEnd.html')
+        return Response(render_template('state_create.html'))
 
 class documentationSite(Resource):
     """deals with rendering the basic location creation site
@@ -92,5 +107,4 @@ class documentationSite(Resource):
     """
 
     def get(self):
-        print(exists('./src/site/documentation.html'))
         return current_app.send_static_file('documentation.html')

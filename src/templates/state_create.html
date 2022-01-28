@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Insert New State</title>
+    </head>
+    <body>
+        <form>
+            <label for="station_id">Station ID:</label><br>
+            <select id="station_id" name="station_id" onchange="getSelectState()"></select>
+            <label for="state">State:</label><br>
+            <select id="state" name="state">
+                <option value=0>Unblocked (0)</option>
+                <option value=1>Blocked (1)</option>
+            </select>
+            <button type="button" onclick="send()">Submit</button>
+        </form>
+        <p>Current State:</p>
+        <p id="current_state">None</p>
+        <p>Date State Changed:</p>
+        <p id="date"></p>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script>
+            window.onload = function getNewOptions() {
+                console.log(window.location.origin+"/location")
+                $.ajax({
+                    type: "GET",
+                    url: window.location.origin+"/location",
+                    dataType: 'json',
+                    success: function(data){
+                        console.log(data);
+                        $("#station_id").empty();
+                        for (let i = 0; i < data.length; i++) {
+                            $("#station_id").append("<option value='"+data[i].id+"'>"+"["+data[i].id+"] "+data[i].title+"</option>");
+                        }
+                        getSelectState();
+                    },error: function( xhr, status, errorThrown){
+                        console.log('Error: ' + errorThrown );
+                        console.log('Status: ' + status );
+                        console.dir( xhr );
+                    },
+                });
+            }
+
+            function getCurrentState(id) {
+                console.log(window.location.origin+"/location")
+                $.ajax({
+                    type: "GET",
+                    url: window.location.origin+"/state/"+id,
+                    dataType: 'json',
+                    success: function(data){
+                        if (data.state == 1) {
+                            $("#current_state").text("Blocked (1)");
+                        } else {
+                            $("#current_state").text("Unblocked (0)");
+                        }
+                        $("#date").text(`${data.date.day}-${data.date.month}-${data.date.year} ${data.date.hour}:${data.date.minute}:${data.date.second}`);
+                    },error: function( xhr, status, errorThrown){
+                        console.log('Error: ' + errorThrown );
+                        console.log('Status: ' + status );
+                        console.dir( xhr );
+                    },
+                });
+            }
+
+            function send() {
+                console.log($("#state").val())
+                $.ajax({
+                    type: "POST",
+                    url: window.location.origin+"/state/"+$("#station_id").val(),
+                    dataType: "json",
+                    data: JSON.stringify({"state": $("#state").val()}),
+                    contentType: "application/json",
+                    success: function(data){
+                        console.log(data);
+                        getCurrentState($("#station_id").val());
+                    },error: function( xhr, status, errorThrown){
+                        console.log('Error: ' + errorThrown );
+                        console.log('Status: ' + status );
+                        console.dir( xhr );
+                    },
+                })
+            }
+
+            function getSelectState(){
+                getCurrentState($('select#station_id').val())
+            }
+        </script>
+    </body>
+</html>
