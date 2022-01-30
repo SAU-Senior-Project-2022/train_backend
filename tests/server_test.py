@@ -1,7 +1,7 @@
 import unittest
 import requests
-# URL = "http://train.jpeckham.com:5000"
-URL = "http://localhost:5000"
+URL = "http://train.jpeckham.com:5000"
+#URL = "http://localhost:5000"
 
 station_ids = []
 def get_locations():
