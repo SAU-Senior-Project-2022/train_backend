@@ -36,7 +36,6 @@
             data: JSON.stringify({"latitude": latitude, "longitude": longitude, "title": title}),
             contentType: "application/json",
             success: function(data){
-                console.log(data);
                 $("#newStationId").text(data.station_id);
             },error: function( xhr, status, errorThrown){
                 console.log('Error: ' + errorThrown );

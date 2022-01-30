@@ -48,12 +48,15 @@
                     url: window.location.origin+"/state/"+id,
                     dataType: 'json',
                     success: function(data){
+                        date = new Date(0);
+                        date.setUTCSeconds(data.date);
+                        console.log(date)
                         if (data.state == 1) {
                             $("#current_state").text("Blocked (1)");
                         } else {
                             $("#current_state").text("Unblocked (0)");
                         }
-                        $("#date").text(`${data.date.day}-${data.date.month}-${data.date.year} ${data.date.hour}:${data.date.minute}:${data.date.second}`);
+                        $("#date").text(date.toString());
                     },error: function( xhr, status, errorThrown){
                         console.log('Error: ' + errorThrown );
                         console.log('Status: ' + status );
