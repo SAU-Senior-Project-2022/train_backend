@@ -9,7 +9,7 @@
 <h3>-- GET:</h3>
 <blockquote>ENDPOINT: /state/[station_id]</blockquote>
 <blockquote>PURPOSE: to get the state of a specific sensor station</blockquote>
-<blockquote>RETURN: {"time": dict, "error_message": str, "error_state": bool, "id": int "state": int, "station_id": int}</blockquote>
+<blockquote>RETURN: {"time": int (epoch), "error_message": str, "error_state": bool, "id": int "state": int, "station_id": int}</blockquote>
 <br>
 <blockquote>ENDPOINT: /location</blockquote>
 <blockquote>PURPOSE: to get the location info of ALL sensor stations</blockquote>
@@ -24,7 +24,7 @@
 <blockquote>ENDPOINT: /location/[station_id]</blockquote>
 <blockquote>PURPOSE: to get the location info of a specific sensor station</blockquote>
 <blockquote>RETURN: {"error_message": str, "error_state": bool, "id": int, "latitude": float, "longitude":float}</blockquote>
-<h3>-- POST:</h3>
+<h3>-- POST: (Remember to add "Content-Type": "application/json" to your header or put post data in the json field if a request does not seem to work)</h3>
 <h4>-- Updating a location state</h4>
 <blockquote>ENDPOINT: /state/[station_id]</blockquote>
 <blockquote>PURPOSE: to update the state of a specific sensor station</blockquote>
