@@ -1,7 +1,7 @@
 import requests
 import time
 #URL = "http://localhost:5000"
-URL = "http://train.jpeckham.com:5000"
+URL = "http://10.14.2.1:5000"
 
 station_ids = []
 def get_locations():
