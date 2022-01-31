@@ -11,13 +11,13 @@
 
 ## Building
 
-The simplest method to deploy this backend is to just use docker. Once [`docker-compose`](https://docs.docker.com/compose/install/) is installed on your device, just run `docker-compose up -d`, and on port 5000 you will have the webserver running.
+The simplest method to deploy this backend is to just use docker. Once [docker-compose](https://docs.docker.com/compose/install/) is installed on your device, just run `docker-compose up -d`, and, on port 5000, you will have the webserver running.
 
 ## Features in [main.py](src/main.py)
 
-There are many options when launching main.py. Run `src/main.py -h` to see all options.
+There are many options when launching [`/src/main.py`](src/main.py), and too see them, Run `src/main.py -h`.
 
-A couple main flags are `--debug` and `--http`. By default, **the server is a development server**, but not in debug mode. Also, if you don't want to put up with self signed certificates, you can use `--http` to use HTTP instead of HTTPS. The default configuration is to look for a database on `localhost` with username `root` and no password. This is likely not your configuration, but if run through docker, will all be setup properly.
+By default, **the server is a development server**, but not in debug mode, as this is currently a breaking option. If you don't want to put up with self signed certificates, you can use `--http` to use HTTP instead of HTTPS.
 
 ## Production
 
@@ -25,23 +25,22 @@ Once in production, you should specify with `--port` a different port that the d
 
 ## Development
 
-`docker-compose down` will destroy the containers, while `docker-compose stop` will just stop them. If changes are being made to the server, you should run `docker-compose down; docker build src/; docker-compose up -d`, while if you are just stoping the service, you can just use `doker-compose stop`, and `docker-compose up -d` when you want to run the services again later.
+`docker-compose down --rmi all` will destroy the containers, while `docker-compose down` will just stop them. If changes are being made to the server, you should run `docker-compose down --rmi all; docker-compose up -d`, while if you are just stoping the service, you can just use `doker-compose down`, and `docker-compose up -d` when you want to run the services again later.
 
-If you wish to just run one of the images provided by the [`docker-compose.yml`](/docker-compose.yml), you can run either `docker-compose up -d --no-deps --build flask` or `docker-compose up -d --no-deps --build mariadb`, and the specified image will be run.
-
-If this directory is opened in `Visual Studio Code`, there are 3 debugger launch options currently. One to launch the webserver with HTTP, one for HTTPS, and one for launching the current python file
+If this directory is opened in [Visual Studio Code](https://code.visualstudio.com/), there are 3 debugger launch options currently. One to launch the webserver with HTTP, one for HTTPS, and one for launching the current python file
 
 ## Testing
 
-If you wish to test the [server](src/main.py). You must run the server with the flags `--debug`, `--fresh`, `--seed` (You can add other flags if you need to be more specific) and run the [`server_test.py`](tests/server_test.py) application with the server loaded in order for the testing application to connect to the server.
+If you wish to test the [server](src/main.py). You must run the server with the flag `--fresh` (You can add other flags if you need to be more specific) and run the [`server_test.py`](tests/server_test.py) application with the server loaded in order for the testing application to connect to the server. At the top of [`server_test.py`](tests/server_test.py) is the `URL` variable, which should be set to localhost to test localy, or the remote server, in our case [http://train.jpeckham.com:5000](http://train.jpeckham.com:5000).
 
 ## Documentation and Station Registration
 
-If you wish to view the documentation, navigate to the [Backend Site](http://train.jpeckham.com:5000/site/documentation) endpoint in a browser.
+If you wish to view the documentation, [click this link](http://train.jpeckham.com:5000/site/documentation).
 
-If you wish to register a new "station", navigate to the [`/site/location/new`](http://train.jpeckham.com:5000/site/location/new) endpoint in a browser.
+If you wish to register a new "station", navigate to the [/site/location/new](http://train.jpeckham.com:5000/site/location/new) endpoint in a browser.
 
-If you wish to register a new "state" for a station, navigate to the [`/site/state/new`](http://train.jpeckham.com:5000/site/state/new) endpoint in a browser.
+If you wish to register a new "state" for a station, navigate to the [/site/state/new](http://train.jpeckham.com:5000/site/state/new) endpoint in a browser.
 
 ## Requirements
-The following document has a list of functional and nonfunctional requirements: [`requirements document`](/requirements.md)
+
+The following document has a list of functional and nonfunctional requirements: [requirements.md](/requirements.md)
